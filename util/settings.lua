@@ -46,10 +46,6 @@ if lfs.getInfo(settingsFile, "file") then
   local success, decodedSettings = json.decode(settingsFile)
   if success then
     settings = formatTable(decodedSettings, defaultSettings)
-    if settings.client.textureSize < 1 then
-      logger.warn("Settings: Found client.textureSize to be less than 1, setting to 1")
-      settings.client.textureSize = 1
-    end
   end
 end
 
@@ -65,7 +61,6 @@ encode()
 local handlers = {}
 local out = {
     client = {},
-    server = {},
     _default = defaultSettings,
     addHandler = function(key, func)
       local h = handlers[key] or {}
@@ -76,20 +71,6 @@ local out = {
 setmetatable(out.client, {
     __index = function(_, key)
         return settings.client[key]
-      end,
-    __newindex = function(_, key, value)
-        settings.client[key] = value
-        encode()
-        if handlers[key] then
-          for _, func in ipairs(handlers[key]) do
-            func()
-          end
-        end
-      end,
-  })
-setmetatable(out.server, {
-    __index = function(_, key)
-        return settings.server[key]
       end,
     __newindex = function(_, key, value)
         settings.client[key] = value
