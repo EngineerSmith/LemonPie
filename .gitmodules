@@ -1,3 +1,6 @@
 [submodule "libs/LemonPieLib"]
 	path = libs/LemonPieLib
 	url = https://github.com/EngineerSmith/LemonPieLib
+[submodule "libs/Gspot"]
+	path = libs/Gspot
+	url = https://notabug.org/pgimeno/Gspot
