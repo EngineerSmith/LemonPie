@@ -1,9 +1,9 @@
 [submodule "libs/LemonPieLib"]
 	path = libs/LemonPieLib
 	url = https://github.com/EngineerSmith/LemonPieLib
-[submodule "libs/Gspot"]
-	path = libs/Gspot
-	url = https://notabug.org/pgimeno/Gspot
 [submodule "libs/utf8"]
 	path = libs/utf8
 	url = https://github.com/Stepets/utf8.lua
+[submodule "libs/helium"]
+	path = libs/helium
+	url = https://github.com/qeffects/helium/
