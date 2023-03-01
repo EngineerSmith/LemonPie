@@ -4,6 +4,3 @@
 [submodule "libs/utf8"]
 	path = libs/utf8
 	url = https://github.com/Stepets/utf8.lua
-[submodule "libs/helium"]
-	path = libs/helium
-	url = https://github.com/qeffects/helium/
