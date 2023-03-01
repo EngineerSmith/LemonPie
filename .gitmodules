@@ -4,3 +4,6 @@
 [submodule "libs/Gspot"]
 	path = libs/Gspot
 	url = https://notabug.org/pgimeno/Gspot
+[submodule "libs/utf8"]
+	path = libs/utf8
+	url = https://github.com/Stepets/utf8.lua
