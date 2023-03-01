@@ -52,6 +52,7 @@ love.conf = function(t)
   t.window.depth        = 24
   t.window.mssa         = 4
 
+  t.modules.audio    = true
   t.modules.data     = true
   t.modules.event    = true
   t.modules.font     = true
@@ -60,13 +61,12 @@ love.conf = function(t)
   t.modules.keyboard = true
   t.modules.math     = true
   t.modules.mouse    = true
+  t.modules.sound    = true
   t.modules.system   = true
   t.modules.timer    = true
   t.modules.window   = true
   
-  t.modules.audio    = false
   t.modules.joystick = false
-  t.modules.sound    = false
   t.modules.thread   = false
   t.modules.touch    = false
   t.modules.video    = false
