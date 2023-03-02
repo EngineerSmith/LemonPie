@@ -41,7 +41,7 @@ love.conf = function(t)
   t.highdpi           = true
 
   t.window.title        = "YellowPie"
-  t.window.icon         = nil
+  t.window.icon         = "assets/images/lemon_pie_icon.png"
   t.window.width        = settings.client.windowSize.width
   t.window.height       = settings.client.windowSize.height
   t.window.fullscreen   = settings.client.windowFullscreen

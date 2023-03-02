@@ -7,12 +7,12 @@ local theme = {
     cornerRadius = 3,
     color = { 
         normal = {
-          bg = { lm.colorFromBytes( 43, 77, 89,200) },
-          fg = { lm.colorFromBytes(189,198,210) },
+          bg = { lm.colorFromBytes( 43, 77, 89,220) },
+          fg = { lm.colorFromBytes(235,215,220) },
         },
         hovered = {
           bg = { lm.colorFromBytes( 57,153,142) },
-          fg = { lm.colorFromBytes(189,199,210) },
+          fg = { lm.colorFromBytes(209,190,186) },
         },
         active = {
           bg = { lm.colorFromBytes(255,220,124) },

@@ -2,6 +2,7 @@ local suit = require("libs.suit").new()
 suit.theme = require("ui.theme")
 
 local flux = require("libs.flux")
+local sysl = require("libs.SYSL-Text")
 
 local settings = require("util.settings")
 local logger = require("util.logger")
@@ -15,10 +16,35 @@ local scene = {
 
 scene.load = function()
   assets["audio.ui.button"] = love.audio.newSource(assets._path["audio.ui.button"], "static")
+  assets["audio.ui.button"]:setVolume(0.2)
+
+  assets["image.logo"] = lg.newImage(assets._path["image.logo"])
+
+  assets["image.lemons"] = { }
+  local items = love.filesystem.getDirectoryItems(assets._path["image.lemons"])
+  
+  for _, file in ipairs(items) do
+    file = assets._path["image.lemons"] .. file
+    if love.filesystem.getInfo(file, "file") then
+      table.insert(assets["image.lemons"], lg.newImage(file))
+    end
+  end
+  
+  scene.title = sysl.new("center", {
+      color = {1,1,1,1},
+      shadow_color = {1,1,1,1},
+      print_speed = .1,
+      character_sound = true,
+      sound_number = 0,
+      sound_every = 2,
+      default_warble = 1
+    })
+  scene.title.effect_speed.rainbow_speed_default = 3
+  scene.title:send("[dropshadow=10][rainbow]Lemon Pie[/rainbow][/dropshadow]")
 
   scene.tween = flux.to(scene.introPos, 1, { x = 0 })
 
-  scene.resize(lg.getDimensions()) -- init scene.scale
+  scene.resize(lg.getDimensions()) -- init values, scale + lemon positions, fonts,
 end
 
 scene.resize = function(w, h)
@@ -38,6 +64,26 @@ scene.resize = function(w, h)
   end
   lg.setFont(assets[fontName])
   logger.info("Set font size to", fontSize)
+
+  local fontSize = math.floor(42 * scene.scale)
+  local fontName = "font.bold."..fontSize
+  if not assets[fontName] then
+    assets[fontName] = lg.newFont(assets._path["font.bold"], fontSize)
+    assets[fontName]:setFilter("nearest", "nearest")
+  end
+  scene.title.default_font = assets[fontName]
+
+  local numberofLemonImages = #assets["image.lemons"]
+
+  scene.lemons = { }
+  for _ = 1, math.floor(50 * scene.scale) do
+    table.insert(scene.lemons, {
+        image = assets["image.lemons"][love.math.random(numberofLemonImages)],
+        x = math.random(-400, settings._default.client.windowSize.width * sw + 200),
+        y = math.random(-400, settings._default.client.windowSize.height * sh + 200),
+      })
+  end
+  logger.info("Created", #scene.lemons, "number of background lemons")
 end
 
 local buttonFactory = function(id, text, targetX, targetY, targetW, targetH, r, active)
@@ -60,8 +106,31 @@ local newButton  = buttonFactory(0, "New" , -3, -1.5, 40, 3)
 
 local state = "main"
 local mainTween = { x = 0 }
+local lemonSpeedX, lemonSpeedY = 20, 60
 
 scene.update = function(dt)
+  scene.title:update(dt)
+
+  local width, height = lg.getDimensions()
+  local dw, dh = settings._default.client.windowSize.width, settings._default.client.windowSize.height
+  for _, lemon in ipairs(scene.lemons) do
+    lemon.x = lemon.x + lemonSpeedX * dt
+    lemon.y = lemon.y + lemonSpeedY * dt
+
+    local x = (lemon.x * scene.scale/1.5) + lemon.image:getWidth()/2
+    local y = (lemon.y * scene.scale/1.5) + lemon.image:getHeight()/2
+
+    if x >= width + 200 then
+      lemon.x = love.math.random(-400,-200)
+      lemon.y = lemon.y + love.math.random(-100, 100)
+    end
+    if y >= height + 200 then
+      lemon.y = love.math.random(-400,-200)
+      lemon.x = lemon.x + love.math.random(-100, 100)
+    end
+  end
+
+  -- UI
   if state == "main" then
     suit.layout:reset(110, 520, 0, 20)
     suit.layout:translate(scene.introPos.x)
@@ -130,8 +199,30 @@ scene.update = function(dt)
   end
 end
 
+local logoScale = .2
 scene.draw = function()
-  lg.clear(196/255,174/255,173/255,1)
+  local c = state ~= "main" and .7 or 1
+  lg.setColor(c,c,c)
+  lg.clear(102/255*c,152/255*c,153/255*c, 1)
+  lg.push("all")
+  for _, lemon in ipairs(scene.lemons) do
+    local x = (lemon.x * scene.scale/1.5) + lemon.image:getWidth()/2
+    local y = (lemon.y * scene.scale/1.5) + lemon.image:getHeight()/2
+    lg.draw(lemon.image, x, y, 0, scene.scale/1.5)
+  end
+  lg.pop()
+
+  if state == "main" then
+    local x, y = lg.getDimensions()
+    local iw, ih = assets["image.logo"]:getDimensions()
+    local s = logoScale * scene.scale
+    lg.draw(assets["image.logo"], x/2 - (iw*s)/2, y/2 - (ih*s), 0, s)
+
+    lg.push("all")
+    scene.title:draw(x/2 - (iw*s)/1.6, y/2)
+    lg.pop()
+  end
+
   suit:draw(1)
 end
 

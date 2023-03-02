@@ -1,4 +1,7 @@
 return {
+  ["image.logo"] = "assets/images/lemon_pie.png",
+  ["image.lemons"] = "assets/images/lemons/",
+
   ["font.regular"] = "assets/fonts/OpenDyslexic-Regular.otf",
   ["font.bold"] = "assets/fonts/OpenDyslexic-Bold.otf",
   ["font.italic"] = "assets/fonts/OpenDyslexic-Italic.otf",
