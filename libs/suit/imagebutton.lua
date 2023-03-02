@@ -8,6 +8,9 @@ end
 
 return function(core, normal, ...)
 	local opt, x,y = core.getOptionsAndSize(...)
+
+	x, y = x * core.scale, y * core.scale
+
 	opt.normal = normal or opt.normal or opt[1]
 	opt.hovered = opt.hovered or opt[2] or opt.normal
 	opt.active = opt.active or opt[3] or opt.hovered
@@ -43,7 +46,7 @@ return function(core, normal, ...)
 
 	core:registerDraw(opt.draw or function(image,x,y, r,g,b,a)
 		love.graphics.setColor(r,g,b,a)
-		love.graphics.draw(image,x,y)
+		love.graphics.draw(image, x * core.scale, y * core.scale, 0, (opt.scale or 1) * core.scale)
 	end, image, x,y, love.graphics.getColor())
 
 	return {
