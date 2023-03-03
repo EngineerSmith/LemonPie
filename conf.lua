@@ -1,4 +1,4 @@
-local identity = "YellowPie"
+local identity = "LemonPie"
 
 love.filesystem.setIdentity(identity, true)
 love.setDeprecationOutput(true)
@@ -13,7 +13,7 @@ if console and love._os == "Windows" then
 end
 
 if not jit then
-  logger.fatal("No JIT support", "LuaJit is required to run this game. This system doesn't support it.")
+  logger.fatal("No JIT support", "LuaJit is required to run this project. This system doesn't support it.")
   args["quit"] = true
   return
 else
@@ -22,7 +22,7 @@ end
 
 local ffi = require("ffi")
 if not ffi then
-  logger.fatal("Unsupported version", "Could not load LuaJit's FFI. Required to run this game. Tell a developer as this should be packaged with the game.")
+  logger.fatal("Unsupported version", "Could not load LuaJit's FFI. Required to run this project. Tell a developer as this should be packaged with the project.")
   args["quit"] = true
   return
 end
@@ -30,7 +30,7 @@ end
 local settings = require("util.settings")
 
 love.conf = function(t)
-  logger.info("Configuring YellowPie")
+  logger.info("Configuring LemonPie")
   t.console = console
   t.version = "11.4"
   t.identity = identity
@@ -40,7 +40,7 @@ love.conf = function(t)
   t.gammacorrect      = true
   t.highdpi           = true
 
-  t.window.title        = "YellowPie"
+  t.window.title        = "LemonPie"
   t.window.icon         = "assets/images/lemon_pie_icon.png"
   t.window.width        = settings.client.windowSize.width
   t.window.height       = settings.client.windowSize.height
@@ -49,7 +49,7 @@ love.conf = function(t)
   t.window.minwidth     = settings._default.client.windowSize.width
   t.window.minheight    = settings._default.client.windowSize.height
   t.window.displayindex = 1
-  t.window.depth        = 24
+  --t.window.depth        = 24
   t.window.mssa         = 4
 
   t.modules.audio    = true
