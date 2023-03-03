@@ -34,13 +34,16 @@ scene.load = function()
       color = {1,1,1,1},
       shadow_color = {1,1,1,1},
       print_speed = .1,
-      character_sound = true,
-      sound_number = 0,
-      sound_every = 2,
-      default_warble = 1
     })
   scene.title.effect_speed.rainbow_speed_default = 3
   scene.title:send("[dropshadow=10][rainbow]Lemon Pie[/rainbow][/dropshadow]")
+
+  scene.subtext = sysl.new("center", {
+      color = {.7,.7,.7,1},
+      shadow_color = {1,1,1,1},
+      print_speed = 0,
+    })
+  scene.subtext:send("[dropshadow=10]A 2D skeleton animator for Love[/dropshadow]")
 
   scene.tween = flux.to(scene.introPos, 1, { x = 0 })
 
@@ -63,6 +66,7 @@ scene.resize = function(w, h)
     assets[fontName]:setFilter("nearest", "nearest")
   end
   lg.setFont(assets[fontName])
+  scene.subtext.default_font = assets[fontName]
   logger.info("Set font size to", fontSize)
 
   local fontSize = math.floor(42 * scene.scale)
@@ -106,10 +110,13 @@ local newButton  = buttonFactory(0, "New" , -3, -1.5, 40, 3)
 
 local state = "main"
 local mainTween = { x = 0 }
-local lemonSpeedX, lemonSpeedY = 20, 60
+local lemonSpeedX, lemonSpeedY = 10, 30
 
 scene.update = function(dt)
   scene.title:update(dt)
+  if scene.title:is_finished() then
+    scene.subtext:update(dt)
+  end
 
   local width, height = lg.getDimensions()
   local dw, dh = settings._default.client.windowSize.width, settings._default.client.windowSize.height
@@ -129,8 +136,9 @@ scene.update = function(dt)
       lemon.x = lemon.x + love.math.random(-100, 100)
     end
   end
+end
 
-  -- UI
+scene.drawui = function()
   if state == "main" then
     suit.layout:reset(110, 520, 0, 20)
     suit.layout:translate(scene.introPos.x)
@@ -220,6 +228,9 @@ scene.draw = function()
 
     lg.push("all")
     scene.title:draw(x/2 - (iw*s)/1.6, y/2)
+    if scene.title:is_finished() then
+      scene.subtext:draw(x/2 - (iw*s)/1.2, y/2+60*scene.scale)
+    end
     lg.pop()
   end
 
