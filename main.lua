@@ -83,7 +83,7 @@ love.run = function()
     end
     
     if ticked then
-      love.drawui()
+      love.updateui()
       love.draw()
       lg.present()
     end

@@ -33,14 +33,14 @@ scene.load = function()
   scene.title = sysl.new("center", {
       color = {1,1,1,1},
       shadow_color = {1,1,1,1},
-      print_speed = .1,
+      print_speed = .075,
     })
   scene.title.effect_speed.rainbow_speed_default = 3
   scene.title:send("[dropshadow=10][rainbow]Lemon Pie[/rainbow][/dropshadow]")
 
   scene.subtext = sysl.new("center", {
-      color = {.7,.7,.7,1},
-      shadow_color = {1,1,1,1},
+      color = {.8,.8,.8,1},
+      shadow_color = {.4,.4,.4,1},
       print_speed = 0,
     })
   scene.subtext:send("[dropshadow=10]A 2D skeleton animator for Love[/dropshadow]")
@@ -138,7 +138,7 @@ scene.update = function(dt)
   end
 end
 
-scene.drawui = function()
+scene.updateui = function()
   if state == "main" then
     suit.layout:reset(110, 520, 0, 20)
     suit.layout:translate(scene.introPos.x)

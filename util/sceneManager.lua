@@ -6,7 +6,7 @@ local sceneManager = {
     "load",
     "unload",
     "update",
-    "drawui",
+    "updateui",
     "draw",
     "quit",
     -- WINDOW

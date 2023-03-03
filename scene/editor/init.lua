@@ -17,7 +17,7 @@ scene.update = function(dt)
   
 end
 
-scene.drawui = function()
+scene.updateui = function()
   
 end
 
