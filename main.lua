@@ -48,7 +48,7 @@ local manualGC = function(timeBudget, safetyNetMB)
 end
 
 love.run = function()
-  logger.info("Loading menu code")
+  logger.info("Loading menu")
   sceneManager.changeScene("scene.menu")
   logger.info("Creating gameloop")
   local frameTime, fuzzyTime = 1/60, {1/2,1,2}

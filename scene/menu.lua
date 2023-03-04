@@ -184,8 +184,10 @@ scene.updateui = function()
     if b.hit then
       mainTween.target = "new"
       flux.to(mainTween, .25, { x = 20 }):oncomplete(function()
-          state = "new"
+          --state = "new"
           mainTween.target, mainTween.x = nil, 0
+          logger.info("Switching to editor")
+          require("util.sceneManager").changeScene("scene.editor")
         end)
     elseif b.entered then
         playEnteredSound()
