@@ -1,7 +1,7 @@
 local spriteEditor = { }
 
-spriteEditor.load = function()
-  
+spriteEditor.load = function(project, suit)
+  spriteEditor.suit = suit
 end
 
 spriteEditor.unload = function()

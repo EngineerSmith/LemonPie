@@ -11,10 +11,12 @@ local scene = {
   spriteEditor = require("scene.editor.spriteeditor"),
 
   active = nil,
+
+  drop = false
 }
 
 scene.load = function(project)
-  scene.spriteEditor.load(project)
+  scene.spriteEditor.load(project, suit)
 
   scene.active = scene.spriteEditor
 end
@@ -34,10 +36,20 @@ end
 scene.draw = function()
   lg.clear(0,0,0,1)
   scene.active:draw()
+  lg.print(tostring(scene.drop))
 end
 
 scene.filedropped = function(file)
   scene.active:filedropped(file)
+  scene.drop = "dropped"
+end
+
+scene.dropbegan = function()
+  scene.drop = true
+end
+
+scene.dropcompleted = function()
+  scene.drop = false
 end
 
 return scene
