@@ -16,8 +16,7 @@ local sceneManager = {
     "displayrotated",
     "filedropped",
     "directorydropped",
-    "dropbegan",
-    "dropcompleted",
+    "isdropping",
     -- TOUCH INPUT
     "touchpressed",
     "touchmoved",

@@ -10,11 +10,13 @@ if args["quit"] then -- triggered quit in conf
 end
 
 local sceneManager = require("util.sceneManager")
+local dropping = require("util.isdropping")
 local utf8 = require("util.utf8")
 local flux = require("libs.flux")
 
 local le = love.event
 local processEvents = function()
+  dropping.eventUpdate()
   le.pump()
   for name, a,b,c,d,e,f,g,h,i,j,k in le.poll() do
     if name == "quit" then

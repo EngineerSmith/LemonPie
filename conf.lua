@@ -32,7 +32,7 @@ local settings = require("util.settings")
 love.conf = function(t)
   logger.info("Configuring LemonPie")
   t.console = console
-  t.version = "12.0"
+  t.version = "11.4"
   t.identity = identity
   t.appendidentity = true
   t.accelerometerjoystick = false
