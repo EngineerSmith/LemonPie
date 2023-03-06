@@ -17,6 +17,7 @@ local sceneManager = {
     "filedropped",
     "directorydropped",
     "isdropping",
+    "stoppeddropping",
     -- TOUCH INPUT
     "touchpressed",
     "touchmoved",

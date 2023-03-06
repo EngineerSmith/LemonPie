@@ -24,4 +24,12 @@ spriteEditor.filedropped = function(file)
   
 end
 
+spriteEditor.isdropping = function(x, y)
+  
+end
+
+spriteEditor.stoppeddropping = function()
+
+end
+
 return spriteEditor 
