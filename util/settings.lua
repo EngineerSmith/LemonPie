@@ -15,11 +15,11 @@ local defaultSettings = {
       height = 600,
     },
     windowFullscreen = false,
-    dyslexic = false,
+    dyslexic = true,
   },
 }
 local b = require("string.buffer")
-local defaultCopy = b.decode(b.encode(defaultSettings))
+local defaultCopy = b.decode(b.encode(defaultSettings)) -- lazy man's deep copy
 b = nil
 
 local formatTable

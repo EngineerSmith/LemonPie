@@ -1,5 +1,5 @@
 local suit = require("libs.suit").new()
-suit.theme = require("ui.theme")
+suit.theme = require("ui.theme_Menu")
 
 local flux = require("libs.flux")
 local sysl = require("libs.SYSL-Text")

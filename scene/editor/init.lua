@@ -1,5 +1,5 @@
 local suit = require("libs.suit").new()
-suit.theme = require("ui.theme")
+suit.theme = require("ui.theme_Editor")
 
 local settings = require("util.settings")
 local logger = require("util.logger")
@@ -7,18 +7,17 @@ local assets = require("util.assets")
 
 local lg = love.graphics
 
-local scene = { 
+local scene = {
   spriteEditor = require("scene.editor.spriteeditor"),
 
-  active = "not dropping",
-
-  drop = false
+  drop = "not dropping",
 }
 
 scene.load = function(project)
-  scene.spriteEditor.load(project, suit)
-
   scene.active = scene.spriteEditor
+  scene.project = project
+
+  scene.spriteEditor.load(project, suit)
 
   scene.resize(lg.getDimensions())
 end
@@ -27,7 +26,7 @@ scene.unload = function()
   scene.spriteEditor.unload()
 end
 
-scene.resize = function()
+scene.resize = function(w, h)
   local wsize = settings._default.client.windowSize
   local tw, th = wsize.width, wsize.height
   local sw, sh = w / tw, h / th
@@ -47,46 +46,64 @@ scene.resize = function()
 end
 
 scene.update = function(dt)
-  scene.active:update(dt)
+  scene.active.update(dt)
 end
 
 scene.updateui = function()
-  scene.active:updateui()
+  scene.active.updateui(0, 40)
 end
 
 local _x, _y = -40,-40
 
 scene.draw = function()
+  lg.origin()
   lg.clear(0,0,0,1)
-  scene.active:draw()
+  scene.active.draw()
   lg.print(tostring(scene.drop))
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
   lg.setColor(1,1,1,1)
+  suit:draw(1)
 end
 
 scene.filedropped = function(file)
-  scene.active:filedropped(file)
+  scene.active.filedropped(file)
   scene.drop = "dropped"
   logger.info("filedropped", file:getFilename())
 end
 
 scene.directorydropped = function(directory)
-  scene.active:directorydropped(directory)
+  scene.active.directorydropped(directory)
   scene.drop = "dropped"
   logger.info("directorydropped", directory)
 end
 
 scene.isdropping = function(x, y)
-  scene.active:isdropping(x, y)
+  scene.active.isdropping(x, y)
   scene.drop = "dropping"
   logger.info("isdropping", x, y)
 end
 
 scene.stoppeddropping = function()
-  scene.active:stoppeddropping()
+  scene.active.stoppeddropping()
   scene.drop = "not dropping"
   logger.info("stoppeddropping")
+end
+
+scene.wheelmoved = function(...)
+  suit:updateWheel(...)
+end
+
+scene.textedited = function(...)
+  suit:textedited(...)
+end
+
+scene.textinput = function(...)
+  suit:textinput(...)
+end
+
+scene.keypressed = function(...)
+  suit:keypressed(...)
 end
 
 return scene
