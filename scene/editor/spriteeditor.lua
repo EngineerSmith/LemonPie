@@ -6,6 +6,8 @@ if isCursorSupported then
   cursor_sizewe = love.mouse.getSystemCursor("sizewe")
 end
 
+local logger = require("util.logger")
+
 local spriteEditor = { }
 
 spriteEditor.load = function(project, suit)
@@ -29,7 +31,10 @@ local drawSpriteSheetTabUI = function(x, y, width)
   local suit = spriteEditor.suit
 
   suit.layout:reset(x, y, 10, 10)
-  suit:Label("Spritesheets", {noBox = true, noScaleY = true}, suit.layout:up(width-5, lg.getFont():getHeight()))
+  local label = suit:Label("Spritesheets", {noBox = true}, suit.layout:up(width-5, lg.getFont():getHeight()))
+  do
+    suit:Shape(-1, {.6,.6,.6}, {noScaleY = true}, x+3,label.y+label.h,width-11,2*suit.scale)
+  end
   local s = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())
   if s.entered and cursor_sizewe then
@@ -56,9 +61,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
 end
 
 spriteEditor.updateui = function(x, y)
-  local width = spriteSheetTabWidth
-
-  drawSpriteSheetTabUI(x, y, width)
+  drawSpriteSheetTabUI(x, y, spriteSheetTabWidth)
 end
 
 spriteEditor.draw = function()

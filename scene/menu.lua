@@ -40,7 +40,7 @@ scene.load = function()
 
   scene.subtext = sysl.new("center", {
       color = {.8,.8,.8,1},
-      shadow_color = {.4,.4,.4,1},
+      shadow_color = {.2,.2,.2,1},
       print_speed = 0,
     })
   scene.subtext:send("[dropshadow=10]A 2D skeleton animator for Love[/dropshadow]")

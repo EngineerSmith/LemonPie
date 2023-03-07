@@ -2,10 +2,13 @@ local BASE = (...):match('(.-)[^%.]+$')
 
 return function(core, id, color, ...)
 	local opt, x,y,w,h = core.getOptionsAndSize(...)
-	x, w, h = x * core.scale, w * core.scale, h * core.scale
+	x, w = x * core.scale, w * core.scale
+
   if not opt.noScaleY then
-    y = y * core.scale
-  end
+		y = y * core.scale
+		h = h * core.scale
+	end
+
   opt.id = opt.id or id
 
 	opt.state = core:registerHitbox(opt.id, x,y,w,h)

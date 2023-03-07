@@ -69,25 +69,21 @@ end
 scene.filedropped = function(file)
   scene.active.filedropped(file)
   scene.drop = "dropped"
-  logger.info("filedropped", file:getFilename())
 end
 
 scene.directorydropped = function(directory)
   scene.active.directorydropped(directory)
   scene.drop = "dropped"
-  logger.info("directorydropped", directory)
 end
 
 scene.isdropping = function(x, y)
   scene.active.isdropping(x, y)
   scene.drop = "dropping"
-  logger.info("isdropping", x, y)
 end
 
 scene.stoppeddropping = function()
   scene.active.stoppeddropping()
   scene.drop = "not dropping"
-  logger.info("stoppeddropping")
 end
 
 scene.wheelmoved = function(...)
