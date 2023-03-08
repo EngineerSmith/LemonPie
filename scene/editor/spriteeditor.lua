@@ -31,6 +31,8 @@ local tabNotHeld = false
 local scrollHeight = 0
 local scrollHitbox = nil
 
+local subtitleGrey = {love.math.colorFromBytes(210,210,210)}
+
 local drawSpriteSheetTabUI = function(x, y, width)
   local suit = spriteEditor.suit
 
@@ -43,10 +45,10 @@ local drawSpriteSheetTabUI = function(x, y, width)
   scrollHitbox = suit:Shape("spriteSheetTabScroll", {1,1,1,0}, x, label.y+label.h, width-5, lg.getHeight())
 
   suit.layout:reset(x, label.y+label.h+5+scrollHeight, 10,10)
-  suit:Label("Hello World", {noBox = true, noScaleY = true}, suit.layout:down(width-5, lg.getFont():getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true}, suit.layout:down(width-5, lg.getFont():getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true}, suit.layout:down(width-5, lg.getFont():getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true}, suit.layout:down(width-5, lg.getFont():getHeight()))
+  suit:Label("Hello World tooooooooooooo longggggggg?", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
+  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
+  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
+  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
 
   local dragBar = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())
@@ -60,10 +62,11 @@ local drawSpriteSheetTabUI = function(x, y, width)
     if isCursorSupported and cursor_sizewe then love.mouse.setCursor(cursor_sizewe) end
     if not isPrimaryMousePressed then
       tabNotHeld = false
+    elseif not tabNotHeld then -- and isPrimaryMousePressed
+      tabWidthChanging = true
     end
   end
-  if not tabNotHeld and isPrimaryMousePressed then
-    tabWidthChanging = true
+  if tabWidthChanging then
     tabWidth = love.mouse.getX() / suit.scale
     if tabWidth < 180 then tabWidth = 180 end
     if tabWidth > 350 then tabWidth = 350 end

@@ -44,6 +44,14 @@ scene.resize = function(w, h)
   lg.setFont(assets[fontName])
   logger.info("Set font size to", fontSize)
 
+  local fontSize = math.floor(10 * scene.scale)
+  local fontName = "font.regular."..fontSize
+  if not assets[fontName] then
+    assets[fontName] = lg.newFont(assets._path["font.regular"], fontSize)
+    assets[fontName]:setFilter("nearest", "nearest")
+  end
+  suit.subtitleFont = assets[fontName]
+
   scene.active.resize(w, h)
 end
 

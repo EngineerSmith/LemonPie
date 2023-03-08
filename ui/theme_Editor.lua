@@ -74,11 +74,11 @@ theme.Label = function(text, opt, x, y, w, h)
     opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
   end
 
-  local c = theme.getColorForState()
+  local c = opt.color or theme.getColorForState()
   if not opt.noBox then
     theme.drawBox(x + opt.x, y - 5 + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
   end
-  lg.setColor(c.fg)
+  lg.setColor(c.fg or c)
   lg.printf(text or opt.text, font, x + 2, y, w - 4, opt.align or "center")
 end
 
