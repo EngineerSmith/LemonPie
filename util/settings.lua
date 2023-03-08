@@ -16,6 +16,7 @@ local defaultSettings = {
     },
     windowFullscreen = false,
     dyslexic = true,
+    scrollspeed = 20,
   },
 }
 local b = require("string.buffer")

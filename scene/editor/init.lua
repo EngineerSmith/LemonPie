@@ -43,6 +43,8 @@ scene.resize = function(w, h)
   end
   lg.setFont(assets[fontName])
   logger.info("Set font size to", fontSize)
+
+  scene.active.resize(w, h)
 end
 
 scene.update = function(dt)
@@ -88,6 +90,7 @@ end
 
 scene.wheelmoved = function(...)
   suit:updateWheel(...)
+  scene.active.wheelmoved(...)
 end
 
 scene.textedited = function(...)
@@ -100,6 +103,10 @@ end
 
 scene.keypressed = function(...)
   suit:keypressed(...)
+end
+
+scene.mousepressed = function(...)
+  scene.active.mousepressed(...)
 end
 
 return scene
