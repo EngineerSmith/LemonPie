@@ -25,7 +25,14 @@ spriteEditor.update = function(dt)
   
 end
 
-local tabWidth = 200
+local validateTabWidth = function(width)
+  if width < 180 then width = 180 end
+  if width > 350 then width = 350 end
+  return width
+end
+
+local tabWidth = validateTabWidth(settings.client.spritesheetTabWidth)
+settings.client.spritesheetTabWidth = tabWidth
 local tabWidthChanging = false
 local tabNotHeld = false
 local scrollHeight = 0
@@ -67,13 +74,12 @@ local drawSpriteSheetTabUI = function(x, y, width)
     end
   end
   if tabWidthChanging then
-    tabWidth = love.mouse.getX() / suit.scale
-    if tabWidth < 180 then tabWidth = 180 end
-    if tabWidth > 350 then tabWidth = 350 end
+    tabWidth = validateTabWidth(love.mouse.getX() / suit.scale)
   end
   if tabWidthChanging and not isPrimaryMousePressed then
     tabWidthChanging = false
     tabWidth = math.floor(tabWidth)
+    settings.client.spritesheetTabWidth = tabWidth
     if not dragBar.hovered then
       tabNotHeld = false
       if isCursorSupported then love.mouse.setCursor(nil) end

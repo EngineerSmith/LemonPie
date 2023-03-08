@@ -14,6 +14,7 @@ local defaultSettings = {
       width = 800,
       height = 600,
     },
+    spritesheetTabWidth = 200,
     windowFullscreen = false,
     dyslexic = true,
     scrollspeed = 20,
