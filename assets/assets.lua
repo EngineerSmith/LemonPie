@@ -2,6 +2,9 @@ return {
   ["image.logo"] = "assets/images/lemon_pie.png",
   ["image.lemons"] = "assets/images/lemons/",
 
+  ["icon.barsHorizontal"] = "assets/kenney/gameicons/barsHorizontal.png",
+  ["icon.barsHorizontal.inactive"] = "assets/kenney/gameicons/barsHorizontal_inactive.png",
+
   ["font.regular"] = "assets/fonts/OpenDyslexic-Regular.otf",
   ["font.bold"] = "assets/fonts/OpenDyslexic-Bold.otf",
   ["font.italic"] = "assets/fonts/OpenDyslexic-Italic.otf",

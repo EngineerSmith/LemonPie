@@ -87,22 +87,6 @@ theme.Shape = function(color, opt, x,y,w,h)
 end
 
 theme.Button = function(text, opt, x, y, w, h)
-  if opt.entered then
-    if opt.flux then opt.flux:stop() end
-    opt.flux = flux.to(opt, .5, {
-      x = opt.targetX or -3,
-      y = opt.targetY or -3,
-      w = opt.targetW or  6,
-      h = opt.targetH or  6 }):ease("elasticout")
-  end
-  if opt.left then
-    if opt.flux then opt.flux:stop() end
-    opt.flux = flux.to(opt, .2, { x=0,y=0,w=0,h=0 }):ease("quadout")
-  end
-  if opt.flux and opt.flux.progress >= 1 and not opt.hovered then
-    opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
-  end
-
   local c = theme.getColorForState(opt.active and "active" or opt.error and "error" or opt.disable and "disable" or opt)
   theme.drawBox(x + opt.x, y + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
 
@@ -110,10 +94,6 @@ theme.Button = function(text, opt, x, y, w, h)
   y = y + theme.getVerticalOffsetForAlign(opt.align, font, h)
   if type(text) == "string" then
     lg.setColor(c.fg)
-    if opt.hovered then
-      text = "< "..text.." >"
-    end
-
     lg.printf(text, font, x + 2, y, w - 4, opt.align or "center")
   else
     lg.setColor(1,1,1)

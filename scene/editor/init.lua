@@ -13,17 +13,26 @@ local scene = {
   drop = "not dropping",
 }
 
+local icons = { }
+
 scene.load = function(project)
   scene.active = scene.spriteEditor
   scene.project = project
 
-  scene.spriteEditor.load(project, suit)
+  assets["audio.ui.button"] = assets["audio.ui.button"] or love.audio.newSource(assets._path["audio.ui.button"], "static")
+  assets["audio.ui.button"]:setVolume(0.2)
 
+  icons["barsHorizontal"] = love.graphics.newImage(assets._path["icon.barsHorizontal"])
+  icons["barsHorizontal.inactive"] = love.graphics.newImage(assets._path["icon.barsHorizontal.inactive"])
+  
+  scene.spriteEditor.load(project, suit)
   scene.resize(lg.getDimensions())
 end
 
 scene.unload = function()
   scene.spriteEditor.unload()
+
+  icons = { }
 end
 
 scene.resize = function(w, h)
@@ -60,7 +69,13 @@ scene.update = function(dt)
 end
 
 scene.updateui = function()
-  scene.active.updateui(0, 40)
+  local height = 40
+
+  suit:ImageButton(icons["barsHorizontal"], { hovered = icons["barsHorizontal.inactive"], scale = 0.4 }, 0,0)
+
+  suit:Shape("NavbarBgLine", {.5,.5,.5}, 0, height-2, lg.getWidth(), 2)
+  suit:Shape("NavbarBg", {.3,.3,.3}, 0,0, lg.getWidth(), height)
+  scene.active.updateui(0, height)
 end
 
 local _x, _y = -40,-40
@@ -69,11 +84,11 @@ scene.draw = function()
   lg.origin()
   lg.clear(0,0,0,1)
   scene.active.draw()
-  lg.print(tostring(scene.drop))
+  suit:draw(1)
+  --lg.print(tostring(scene.drop))
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
   lg.setColor(1,1,1,1)
-  suit:draw(1)
 end
 
 scene.filedropped = function(file)

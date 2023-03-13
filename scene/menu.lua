@@ -15,7 +15,7 @@ local scene = {
 }
 
 scene.load = function()
-  assets["audio.ui.button"] = love.audio.newSource(assets._path["audio.ui.button"], "static")
+  assets["audio.ui.button"] = assets["audio.ui.button"] or love.audio.newSource(assets._path["audio.ui.button"], "static")
   assets["audio.ui.button"]:setVolume(0.2)
 
   assets["image.logo"] = lg.newImage(assets._path["image.logo"])
@@ -48,6 +48,11 @@ scene.load = function()
   scene.tween = flux.to(scene.introPos, 1, { x = 0 })
 
   scene.resize(lg.getDimensions()) -- init values, scale + lemon positions, fonts,
+end
+
+scene.unload = function()
+  assets["image.logo"] = nil
+  assets["image.lemons"] = nil
 end
 
 scene.resize = function(w, h)

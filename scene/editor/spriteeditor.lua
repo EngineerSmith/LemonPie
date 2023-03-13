@@ -35,6 +35,7 @@ local tabWidth = validateTabWidth(settings.client.spritesheetTabWidth)
 settings.client.spritesheetTabWidth = tabWidth
 local tabWidthChanging = false
 local tabNotHeld = false
+
 local scrollHeight = 0
 local scrollHitbox = nil
 
