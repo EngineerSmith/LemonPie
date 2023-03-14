@@ -9,7 +9,9 @@ end
 local settings = require("util.settings")
 local logger = require("util.logger")
 
-local spriteEditor = { }
+local spriteEditor = { 
+  gridX = 0, gridY = 0
+}
 
 spriteEditor.load = function(project, suit)
   spriteEditor.suit = suit
@@ -105,18 +107,20 @@ local drawGrid = function(x, y, tileW, tileH, w, h, scale)
   local scaledW, scaledH = tileW * scale, tileH * scale
   local offsetX, offsetY = x % scaledW, y % scaledH
 
+  x = x > 0 and -x or x
+  y = y > 0 and -y or y
+  
   for i=-scaledW + offsetX, w, scaledW do
-    lg.line(i, -y, i, h)
+    lg.line(i, y, i, h)
   end
   for i=-scaledH + offsetY, h, scaledH do
-    lg.line(-x, i, w, i)
+    lg.line(x, i, w, i)
   end
   lg.pop()
 end
 
-
 spriteEditor.draw = function()
-  drawGrid(0,0,36,36,lg.getDimensions())
+  drawGrid(spriteEditor.gridX,spriteEditor.gridY, 36,36, lg.getDimensions())
 end
 
 spriteEditor.resize = function(_, _)
@@ -135,16 +139,35 @@ spriteEditor.stoppeddropping = function()
 
 end
 
-spriteEditor.wheelmoved = function(_, y)
-  if scrollHitbox.hovered then
-    scrollHeight = scrollHeight + y * settings.client.scrollspeed
-    if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
+local notOnUI = false
+
+spriteEditor.mousepressed = function(x,y, button)
+  if button == 3 and scrollHitbox and scrollHitbox.hovered then
+    scrollHeight = 0
+  end
+  if not spriteEditor.suit:anyHovered() and not tabWidthChanging then
+    notOnUI = true
   end
 end
 
-spriteEditor.mousepressed = function(_,_, button)
-  if button == 3 and scrollHitbox.hovered then
-    scrollHeight = 0
+spriteEditor.mousemoved = function(_, _, dx, dy)
+  if notOnUI then
+    if love.mouse.isDown(1) then
+      print(dx, dy)
+      spriteEditor.gridX = spriteEditor.gridX + dx
+      spriteEditor.gridY = spriteEditor.gridY + dy
+    end
+  end
+end
+
+spriteEditor.mousereleased = function(_,_, button)
+  notOnUI = false
+end
+
+spriteEditor.wheelmoved = function(_, y)
+  if not notOnUI and scrollHitbox and scrollHitbox.hovered then
+    scrollHeight = scrollHeight + y * settings.client.scrollspeed
+    if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
   end
 end
 

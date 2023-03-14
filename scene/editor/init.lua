@@ -73,6 +73,8 @@ local b1txt = "Sprite Editor"
 local b2txt = "Coming soon"
 
 scene.updateui = function()
+  suit:enterFrame(1)
+
   local height = 40
   local imgScale = .4
   suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
@@ -87,6 +89,7 @@ scene.updateui = function()
     bgline[1],bgline[2],bgline[3] = .5,.5,.5
   end
   suit:Shape("NavbarBg", {.3,.3,.3}, 0,0, lg.getWidth(), height)
+
   scene.active.updateui(0, height)
 end
 
@@ -96,7 +99,7 @@ scene.draw = function()
   lg.origin()
   lg.clear(0,0,0,1)
   scene.active.draw()
-  suit:draw(1)
+  suit:draw()
   --lg.print(tostring(scene.drop))
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
@@ -142,6 +145,14 @@ end
 
 scene.mousepressed = function(...)
   scene.active.mousepressed(...)
+end
+
+scene.mousemoved = function(...)
+  scene.active.mousemoved(...)
+end
+
+scene.mousereleased = function(...)
+  scene.active.mousereleased(...)
 end
 
 return scene

@@ -228,7 +228,7 @@ function suit:draw(mouseButton)
 	end
 	love.graphics.pop()
 	self.draw_queue.n = 0
-	self:enterFrame(mouseButton)
+	--self:enterFrame(mouseButton)
 end
 
 return suit

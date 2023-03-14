@@ -151,6 +151,7 @@ scene.update = function(dt)
 end
 
 scene.updateui = function()
+  suit:enterFrame(1)
   if state == "main" then
     suit.layout:reset(110, 520, 0, 20)
     suit.layout:translate(scene.introPos.x)
