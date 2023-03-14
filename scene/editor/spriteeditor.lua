@@ -96,8 +96,27 @@ spriteEditor.updateui = function(x, y)
   drawSpriteSheetTabUI(x, y, tabWidth)
 end
 
+local drawGrid = function(x, y, tileW, tileH, w, h, scale)
+  scale = scale or spriteEditor.suit.scale
+  lg.push("all")
+  lg.setLineWidth(math.min(.8 / (scale * 1.5), .4))
+  lg.setColor(1,1,1)
+
+  local scaledW, scaledH = tileW * scale, tileH * scale
+  local offsetX, offsetY = x % scaledW, y % scaledH
+
+  for i=-scaledW + offsetX, w, scaledW do
+    lg.line(i, -y, i, h)
+  end
+  for i=-scaledH + offsetY, h, scaledH do
+    lg.line(-x, i, w, i)
+  end
+  lg.pop()
+end
+
+
 spriteEditor.draw = function()
-  
+  drawGrid(0,0,25,25,lg.getDimensions())
 end
 
 spriteEditor.resize = function(_, _)
