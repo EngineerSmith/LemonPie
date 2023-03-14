@@ -10,6 +10,13 @@ local assets = require("util.assets")
 
 local lg = love.graphics
 
+local fontName = "font.regular."..18 -- always load font 18
+if not assets[fontName] then
+  assets[fontName] = lg.newFont(assets._path["font.regular"], 18)
+  assets[fontName]:setFilter("nearest", "nearest")
+end
+
+
 local scene = { 
   introPos = { x = -100 },
 }

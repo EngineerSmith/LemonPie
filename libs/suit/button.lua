@@ -4,7 +4,11 @@ local BASE = (...):match('(.-)[^%.]+$')
 
 return function(core, text, ...)
 	local opt, x,y,w,h = core.getOptionsAndSize(...)
-	x, y, w, h = x * core.scale, y * core.scale, w * core.scale, h * core.scale
+
+	w = w or opt.font and opt.font:getWidth(text) + 10 or love.graphics.getFont():getWidth(text) + 10
+	h = h or opt.font and opt.font:getHeight() + 10 or love.graphics.getFont():getHeight() + 10
+	
+	x, y, w, h = opt.noScaleX and x or x * core.scale, y * core.scale, opt.noScaleX and w or w * core.scale, opt.noScaleY and h or h * core.scale
 
 	if not opt.x then
 		opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
@@ -12,8 +16,6 @@ return function(core, text, ...)
 
 	opt.id = opt.id or text
 
-	w = w or opt.font:getWidth(text) + 4
-	h = h or opt.font:getHeight() + 4
 
 	opt.state = core:registerHitbox(opt.id, x,y,w,h)
 
@@ -35,6 +37,6 @@ return function(core, text, ...)
 		hovered = hovered,
 		entered = entered,
 		left = left,
-		disabled_hovered = opt.disable and core:isHovered(opt.id)
+		disabled_hovered = opt.disable and core:isHovered(opt.id),
 	}
 end

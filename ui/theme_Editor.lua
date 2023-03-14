@@ -4,27 +4,27 @@ local flux = require("libs.flux")
 
 local theme = {
     scale = 1,
-    cornerRadius = 0,
+    cornerRadius = 3,
     color = { 
         normal = {
-          bg = { lm.colorFromBytes( 43, 77, 89,220) },
+          bg = { .5,.5,.5 },
           fg = { lm.colorFromBytes(240,240,240) },
         },
         hovered = {
-          bg = { lm.colorFromBytes( 57,153,142) },
+          bg = { .6,.6,.6 },
           fg = { lm.colorFromBytes(240,240,240) },
         },
         active = {
-          bg = { lm.colorFromBytes(255,220,124) },
-          fg = { lm.colorFromBytes( 43, 77, 89) },
+          bg = { .6,.6,.6 },
+          fg = { lm.colorFromBytes(240,240,240) },
         },
         error = {
           bg = { lm.colorFromBytes(191, 39, 66) },
           fg = { lm.colorFromBytes(240,208,107) },
         },
         disable = {
-          bg = { lm.colorFromBytes( 60, 78, 84) },
-          fg = { lm.colorFromBytes(145,148,158) },
+          bg = { .35,.35,.35 },
+          fg = { .45,.45,.45 },
         }
       },
   }
@@ -36,7 +36,7 @@ end
 
 theme.drawBox = function(x, y, w, h, colors, cornerRadius)
   if cornerRadius then
-    cornerRadius = math.max(3, cornerRadius)
+    cornerRadius = math.max(3, cornerRadius) * theme.scale
     w = math.max(cornerRadius / 2, w)
     if h < cornerRadius / 2 then
       y, h = y - cornerRadius - h, cornerRadius / 2
@@ -88,7 +88,7 @@ end
 
 theme.Button = function(text, opt, x, y, w, h)
   local c = theme.getColorForState(opt.active and "active" or opt.error and "error" or opt.disable and "disable" or opt)
-  theme.drawBox(x + opt.x, y + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
+  theme.drawBox(x + opt.x, y + opt.y, w + opt.w, h + opt.h, opt.color or c, (opt.x ~= 0 and opt.r or -opt.x)*3)
 
   local font = opt.font or lg.getFont()
   y = y + theme.getVerticalOffsetForAlign(opt.align, font, h)

@@ -68,12 +68,24 @@ scene.update = function(dt)
   scene.active.update(dt)
 end
 
+local bgline = {.5,.5,.5}
+local b1txt = "Sprite Editor"
+local b2txt = "Coming soon"
+
 scene.updateui = function()
   local height = 40
-
-  suit:ImageButton(icons["barsHorizontal"], { hovered = icons["barsHorizontal.inactive"], scale = 0.4 }, 0,0)
-
-  suit:Shape("NavbarBgLine", {.5,.5,.5}, 0, height-2, lg.getWidth(), 2)
+  local imgScale = .4
+  suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
+  
+  suit:Shape("NavbarBgLine", bgline, 0, height-2, lg.getWidth(), 2)
+  suit.layout:reset(100*imgScale*scene.scale+10, 5, 10)
+  local b1 = suit:Button(b1txt, { noScaleX = true, r=5 }, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
+  local b2 = suit:Button(b2txt, { noScaleX = true, disable = true, r=5}, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
+  if b1.hovered or b2.hovered then
+    bgline[1],bgline[2],bgline[3] = .6,.6,.6
+  else
+    bgline[1],bgline[2],bgline[3] = .5,.5,.5
+  end
   suit:Shape("NavbarBg", {.3,.3,.3}, 0,0, lg.getWidth(), height)
   scene.active.updateui(0, height)
 end
