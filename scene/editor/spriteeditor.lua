@@ -1,9 +1,10 @@
 local lg = love.graphics
 
 local isCursorSupported = love.mouse.isCursorSupported()
-local cursor_sizewe 
+local cursor_sizewe, cursor_sizeall
 if isCursorSupported then
   cursor_sizewe = love.mouse.getSystemCursor("sizewe")
+  cursor_sizeall = love.mouse.getSystemCursor("cursor_sizeall")
 end
 
 local settings = require("util.settings")
@@ -145,23 +146,26 @@ spriteEditor.mousepressed = function(x,y, button)
   if button == 3 and scrollHitbox and scrollHitbox.hovered then
     scrollHeight = 0
   end
-  if not spriteEditor.suit:anyHovered() and not tabWidthChanging then
+  if button == 1 and not spriteEditor.suit:anyHovered() and not tabWidthChanging then
     notOnUI = true
+    if cursor_sizeall then
+      love.mouse.setCursor(cursor_sizeall)
+    end
   end
 end
 
 spriteEditor.mousemoved = function(_, _, dx, dy)
   if notOnUI then
-    if love.mouse.isDown(1) then
-      print(dx, dy)
-      spriteEditor.gridX = spriteEditor.gridX + dx
-      spriteEditor.gridY = spriteEditor.gridY + dy
-    end
+    spriteEditor.gridX = spriteEditor.gridX + dx
+    spriteEditor.gridY = spriteEditor.gridY + dy
   end
 end
 
 spriteEditor.mousereleased = function(_,_, button)
-  notOnUI = false
+  if notOnUI then
+    notOnUI = false
+    love.mouse.setCursor(nil)
+  end
 end
 
 spriteEditor.wheelmoved = function(_, y)
