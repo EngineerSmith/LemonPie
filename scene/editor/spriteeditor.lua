@@ -4,11 +4,13 @@ local isCursorSupported = love.mouse.isCursorSupported()
 local cursor_sizewe, cursor_sizeall
 if isCursorSupported then
   cursor_sizewe = love.mouse.getSystemCursor("sizewe")
-  cursor_sizeall = love.mouse.getSystemCursor("cursor_sizeall")
+  cursor_sizeall = love.mouse.getSystemCursor("sizeall")
 end
 
 local settings = require("util.settings")
 local logger = require("util.logger")
+
+local movingGrid = false
 
 local spriteEditor = { 
   gridX = 0, gridY = 0
@@ -49,11 +51,9 @@ local drawSpriteSheetTabUI = function(x, y, width)
 
   suit.layout:reset(x, y, 10, 10)
   local label = suit:Label("Spritesheets", {noBox = true}, suit.layout:up(width-5, lg.getFont():getHeight()))
-  do
-    suit:Shape(-1, {.6,.6,.6}, {noScaleY = true}, x+3,label.y+label.h,width-11,2*suit.scale)
-  end
+  suit:Shape(-1, {.6,.6,.6}, {noScaleY = true}, x+3,label.y+label.h,width-11,2*suit.scale)
 
-  scrollHitbox = suit:Shape("spriteSheetTabScroll", {1,1,1,0}, x, label.y+label.h, width-5, lg.getHeight())
+  scrollHitbox = {x, label.y+label.h, width-5, lg.getHeight()}
 
   suit.layout:reset(x, label.y+label.h+5+scrollHeight, 10,10)
   suit:Label("Hello World tooooooooooooo longggggggg?", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
@@ -69,7 +69,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
   if dragBar.entered and isPrimaryMousePressed and not tabWidthChanging then
     tabNotHeld = true
   end
-  if dragBar.hovered then
+  if dragBar.hovered and not movingGrid then
     if isCursorSupported and cursor_sizewe then love.mouse.setCursor(cursor_sizewe) end
     if not isPrimaryMousePressed then
       tabNotHeld = false
@@ -89,7 +89,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
       if isCursorSupported then love.mouse.setCursor(nil) end
     end
   end
-  if dragBar.left and not tabWidthChanging then
+  if dragBar.left and not tabWidthChanging and not movingGrid then
     tabNotHeld = false
     if isCursorSupported then love.mouse.setCursor(nil) end
   end
@@ -140,14 +140,12 @@ spriteEditor.stoppeddropping = function()
 
 end
 
-local notOnUI = false
-
 spriteEditor.mousepressed = function(x,y, button)
-  if button == 3 and scrollHitbox and scrollHitbox.hovered then
+  if button == 3 and scrollHitbox and spriteEditor.suit:mouseInRect(unpack(scrollHitbox)) then
     scrollHeight = 0
   end
   if button == 1 and not spriteEditor.suit:anyHovered() and not tabWidthChanging then
-    notOnUI = true
+    movingGrid = true
     if cursor_sizeall then
       love.mouse.setCursor(cursor_sizeall)
     end
@@ -155,21 +153,21 @@ spriteEditor.mousepressed = function(x,y, button)
 end
 
 spriteEditor.mousemoved = function(_, _, dx, dy)
-  if notOnUI then
+  if movingGrid then
     spriteEditor.gridX = spriteEditor.gridX + dx
     spriteEditor.gridY = spriteEditor.gridY + dy
   end
 end
 
 spriteEditor.mousereleased = function(_,_, button)
-  if notOnUI then
-    notOnUI = false
+  if movingGrid then
+    movingGrid = false
     love.mouse.setCursor(nil)
   end
 end
 
 spriteEditor.wheelmoved = function(_, y)
-  if not notOnUI and scrollHitbox and scrollHitbox.hovered then
+  if not movingGrid and scrollHitbox and spriteEditor.suit:mouseInRect(unpack(scrollHitbox)) then
     scrollHeight = scrollHeight + y * settings.client.scrollspeed
     if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
   end
