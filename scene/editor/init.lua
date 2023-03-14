@@ -77,7 +77,7 @@ scene.updateui = function()
   local imgScale = .4
   suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
   
-  suit:Shape("NavbarBgLine", bgline, 0, height-2, lg.getWidth(), 2)
+  suit:Shape("NavbarBgLine", bgline, 0, height-3, lg.getWidth(), 3)
   suit.layout:reset(100*imgScale*scene.scale+10, 5, 10)
   local b1 = suit:Button(b1txt, { noScaleX = true, r=5 }, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
   local b2 = suit:Button(b2txt, { noScaleX = true, disable = true, r=5}, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))

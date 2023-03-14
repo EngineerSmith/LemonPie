@@ -100,7 +100,7 @@ local drawGrid = function(x, y, tileW, tileH, w, h, scale)
   scale = scale or spriteEditor.suit.scale
   lg.push("all")
   lg.setLineWidth(math.min(.8 / (scale * 1.5), .4))
-  lg.setColor(1,1,1)
+  lg.setColor(.6,.6,.7)
 
   local scaledW, scaledH = tileW * scale, tileH * scale
   local offsetX, offsetY = x % scaledW, y % scaledH
@@ -116,7 +116,7 @@ end
 
 
 spriteEditor.draw = function()
-  drawGrid(0,0,25,25,lg.getDimensions())
+  drawGrid(0,0,36,36,lg.getDimensions())
 end
 
 spriteEditor.resize = function(_, _)
