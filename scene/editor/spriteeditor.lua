@@ -138,7 +138,7 @@ end
 spriteEditor.wheelmoved = function(_, y)
   if scrollHitbox.hovered then
     scrollHeight = scrollHeight + y * settings.client.scrollspeed
-    if scrollHeight < 0 then scrollHeight = 0 end
+    if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
   end
 end
 
