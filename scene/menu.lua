@@ -9,19 +9,25 @@ local project = require("src.project")
 local settings = require("util.settings")
 local logger = require("util.logger")
 local assets = require("util.assets")
+local file = require("util.file")
 
 local lg = love.graphics
 
-local fontName = "font.regular."..18 -- always load font 18
-if not assets[fontName] then
-  assets[fontName] = lg.newFont(assets._path["font.regular"], 18)
-  assets[fontName]:setFilter("nearest", "nearest")
+local scene = { 
+  introPos = { x = project.getActiveProjects() and -420 or -195 },
+}
+
+local getFont = function(size, name)
+  local fontSize = math.floor(size * (scene.scale or 1))
+  local fontName = name.."."..fontSize
+  if not assets[fontName] then
+    assets[fontName] = lg.newFont(assets._path[name], fontSize)
+    assets[fontName]:setFilter("nearest", "nearest")
+  end
+  return assets[fontName], fontSize
 end
 
-
-local scene = { 
-  introPos = { x = -250 },
-}
+getFont(18, "font.regular") -- always load font 18
 
 local logoScale = .2
 
@@ -118,16 +124,6 @@ scene.unload = function()
   assets["image.lemons"] = nil
 end
 
-local getFont = function(size, name)
-  local fontSize = math.floor(size * scene.scale)
-  local fontName = name.."."..fontSize
-  if not assets[fontName] then
-    assets[fontName] = lg.newFont(assets._path[name], fontSize)
-    assets[fontName]:setFilter("nearest", "nearest")
-  end
-  return assets[fontName], fontSize
-end
-
 scene.resize = function(w, h)
   local wsize = settings._default.client.windowSize
   local tw, th = wsize.width, wsize.height
@@ -176,11 +172,9 @@ local playEnteredSound = function()
   assets["audio.ui.button"]:clone():play()
 end
 
-local backButton = buttonFactory("0", "Back", -20, -1.5, 20, 3, 3)
 
 local quitButton = buttonFactory(2, "Exit", -3, -1.5, 40, 3)
-local loadButton = buttonFactory(1, "Load", -3, -1.5, 40, 3)
-local newButton  = buttonFactory(0, "New" , -3, -1.5, 40, 3)
+local previousProjectButton = buttonFactory(1, "Open Previous Project", -3, -1.5, 40, 3)
 
 local state = "main"
 local lemonSpeedX, lemonSpeedY = 10, 30
@@ -234,20 +228,40 @@ end
 scene.updateui = function()
   suit:enterFrame(1)
   if state == "main" then
-    suit.layout:reset(50, 520, 0, 20)
+    suit.layout:reset(50, 520, 50, 20)
     suit.layout:translate(scene.introPos.x)
+    -- Previous Project
+    local projects = project.getActiveProjects()
+    if projects then
+      local b = suit:Button(previousProjectButton.text, previousProjectButton, suit.layout:up(365, 30))
+      if b.entered then
+        playEnteredSound()
+      elseif b.hovered then
+        local path = projects[1].path
+        local font = assets["font.regular.18"]
+        local w = math.min(font:getWidth(path)+20, 300*math.ceil(suit.scale))
+        local _, wrappedtext = font:getWrap(path, w)
+	      local h = (30 * #wrappedtext + font:getLineHeight() * (#wrappedtext + 1))
+        local x, y, w, _ = suit.layout:right(w, 30)
+        if y + h > settings._default.client.windowSize.height then
+          h = h + 10
+          y = settings._default.client.windowSize.height - h - 5
+        else
+          h = h * scene.scale
+        end
+        suit:Label(path, {valign = "top"}, x, y, w, h)
+        suit.layout:left(365, 30)
+      end
+      if b.hit then
+        scene.directorydropped(projects[1].path)
+      end
+    end
     -- quit button
     local b = suit:Button(quitButton.text, quitButton, suit.layout:up(140, 30))
     if b.hit then
       love.event.quit()
     elseif b.entered then
       playEnteredSound()
-    end
-
-    local projects = project.getActiveProjects()
-    suit.layout:reset()
-    if #project > 0 then
-      
     end
   end
 end
@@ -324,11 +338,14 @@ scene.keypressed = function(...)
 end
 
 scene.directorydropped = function(path)
+  logger.info("Attempting to open project at", path)
   local project, errorMessage = project.new(path)
   if not project then
+    logger.error("Failed to open project at", path, ", because: ", errorMessage)
     showError(errorMessage)
     return
   end
+  scene.stoppeddropping() -- ensure stopped is called
   require("util.sceneManager").changeScene("scene.editor", project)
 end
 

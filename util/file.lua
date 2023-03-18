@@ -17,6 +17,12 @@ file.getArchiveName = function(path)
     return name and name:lower() or nil
 end
 
+-- "C:\\git\\project", "/git/ImportantProject/project" --> "project"
+file.getDirectoryName = function(path)
+  local name = path:gsub("\\", "/"):match("([^/]+)$")
+  return name and name:lower() or nil
+end
+
 file.canBeMounted = function(path)
     local info = lfs.getInfo(path)
     return info and (info.type == "directory" or (info.type == "file" and file.getFileExtension(path) == "zip"))

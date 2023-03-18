@@ -128,6 +128,10 @@ spriteEditor.resize = function(_, _)
   scrollHeight = 0
 end
 
+spriteEditor.directorydropped = function(directory)
+  
+end
+
 spriteEditor.filedropped = function(file)
   
 end

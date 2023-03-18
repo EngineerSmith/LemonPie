@@ -51,6 +51,7 @@ end
 theme.getVerticalOffsetForAlign = function(valign, font, h)
   if valign == "top" then return 0
   elseif valign == "bottom" then return h - font:getHeight()
+  elseif type(valign) == "number" then return valign
   else--[[if valign == "middle" then]] return (h - font:getHeight()) / 2
   end
 end
@@ -61,22 +62,23 @@ theme.Label = function(text, opt, x, y, w, h)
   local font = opt.font or lg.getFont()
   y = y + theme.getVerticalOffsetForAlign(opt.valign, font, h)
   
-  if opt.entered then
-    if opt.flux then opt.flux:stop() end
-    opt.flux = flux.to(opt, .3, { x=-2, y=-2, w=4,h=4 }):ease("elasticout")
-  end
-  if opt.left then
-    if opt.flux then opt.flux:stop() end
-    opt.flux = flux.to(opt, .2, { x=0,y=0,w=0,h=0 }):ease("quadout")
-  end
-  if opt.flux and opt.flux.progress >= 1 and not opt.hovered then
-    opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
-  end
+  -- if opt.entered then
+  --   if opt.flux then opt.flux:stop() end
+  --   opt.flux = flux.to(opt, .3, { x=-2, y=-2, w=4,h=4 }):ease("elasticout")
+  -- end
+  -- if opt.left then
+  --   if opt.flux then opt.flux:stop() end
+  --   opt.flux = flux.to(opt, .2, { x=0,y=0,w=0,h=0 }):ease("quadout")
+  -- end
+  -- if opt.flux and opt.flux.progress >= 1 and not opt.hovered then
+  --   opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
+  -- end
 
-  local c = theme.getColorForState()
-  theme.drawBox(x + opt.x, y - 5 + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
-
-  lg.setColor(c.fg)
+  local c = opt.color or theme.getColorForState()
+  if not opt.noBox then
+    theme.drawBox(x + opt.x, y + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
+  end
+  lg.setColor(c.fg or c)
   lg.printf(text or opt.text, font, x + 2, y, w - 4, opt.align or "center")
 end
 

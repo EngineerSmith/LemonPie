@@ -5,11 +5,12 @@ local BASE = (...):match('(.-)[^%.]+$')
 return function(core, text, ...)
 	local opt, x,y,w,h = core.getOptionsAndSize(...)
 	local prey = y
-	x, w, h = x * core.scale, w * core.scale, h
+	x, w = x * core.scale, w * core.scale
 
 	if not opt.noScaleY then
 		y = y * core.scale
 	end
+
 
 	if not opt.x then
 		opt.x, opt.y, opt.w, opt.h = 0, 0, 0, 0
@@ -32,13 +33,12 @@ return function(core, text, ...)
 	opt.hit, opt.hovered, opt.entered, opt.left = hit, hovered, entered, left
 
 	core:registerDraw(opt.draw or core.theme.Label, text, opt, x,y,w,h)
-
 	return {
 		id = opt.id,
 		hit = hit,
 		hovered = hovered,
 		entered = entered,
 		left = left,
-		x = x, y = y, w = w, h = h, prey = y
+		x = x, y = y, w = w, h = h, prey = prey
 	}
 end
