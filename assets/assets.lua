@@ -4,6 +4,7 @@ return {
 
   ["icon.barsHorizontal"] = "assets/kenney/gameicons/barsHorizontal.png",
   ["icon.barsHorizontal.inactive"] = "assets/kenney/gameicons/barsHorizontal_inactive.png",
+  ["icon.import"] = "assets/kenney/gameicons/import.png",
 
   ["font.regular"] = "assets/fonts/OpenDyslexic-Regular.otf",
   ["font.bold"] = "assets/fonts/OpenDyslexic-Bold.otf",

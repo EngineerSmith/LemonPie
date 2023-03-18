@@ -12,7 +12,7 @@ local sceneManager = {
     -- WINDOW
     "focus",
     "resize",
-    "visable",
+    "visible",
     "displayrotated",
     "filedropped",
     "directorydropped",

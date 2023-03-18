@@ -1345,7 +1345,7 @@ function M:changeDraw(str, tx, ty, i)
     end
 
     if self.effect_flags.bounce then
-        strchg.y = math.floor((strchg.y + 2 * math.sin(self.timer_animation * self.effect_speed.bounce_speed + i)) + 0.5)
+        strchg.y = math.floor((strchg.y + (self.bounce_height or 2) * math.sin(self.timer_animation * self.effect_speed.bounce_speed + i)) + 0.5)
     end
 
     if self.effect_flags.blink then

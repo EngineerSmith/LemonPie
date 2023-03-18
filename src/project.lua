@@ -8,27 +8,26 @@ local lfs = love.filesystem
 
 local prevPath = nil
 
+local projectsFile = "projects.json"
+local projectFile = "/project.lemonpie"
+
+-- generic funcs
+
 project.new = function(path)
   if prevPath then
-    lfs.unmount("project")
     project.addProject(prevPath)
   end
 
-  if not lfs.mount(path, "project") then
-    return nil, "Given path ("..tostring(path)..") could not be mounted"
-  end
   prevPath = path
-  
   project.addProject(path)
 
-  return project.loadProject()
+  return project.loadProject(path)
 end
-
-local projectsFile = "projects.json"
 
 project.getActiveProjects = function()
   if lfs.getInfo(projectsFile, "file") then
-    return json.decode(projectsFile)
+    local success, projects = json.decode(projectsFile)
+    return projects
   end
 end
 
@@ -49,15 +48,38 @@ project.addProject = function(path)
   json.encode(projectsFile, projects)
 end
 
-project.loadProject = function()
+project.loadProject = function(path)
   -- new Project
-  if not lfs.getInfo("project/project.lemonpie", "file") then
-    
+  if not lfs.getInfo(path..projectFile, "file") then
+    return setmetatable({
+        path = path,
+      }, project)
   else -- existing Project
-
+    local success, self = json.decode(path..projectFile, true)
+    if not success then 
+      return nil, "A problem appeared trying to load the project metadata.\n"..tostring(self)
+    end
+    return setmetatable(self, project)
   end
+end
+
+-- self funcs
+
+project.close = function(self)
+  local errorMessage = self:saveProject()
+  if errorMessage then
+    return false, errorMessage
+  end
+  project.addProject(prevPath)
+  prevPath = nil
   return true
 end
 
+project.saveProject = function(self)
+  local success, errorMessage = json.encode(self.path..projectFile, self, true)
+  if not success then
+    return errorMessage
+  end
+end
 
 return project

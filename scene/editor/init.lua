@@ -30,6 +30,8 @@ scene.load = function(project)
 end
 
 scene.unload = function()
+  local success, errorMessage = scene.project:close()
+  if not success then error(errorMessage) end -- todo: replace with better error
   scene.spriteEditor.unload()
 
   icons = { }
@@ -77,8 +79,12 @@ scene.updateui = function()
 
   local height = 40
   local imgScale = .4
-  suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
+  local b = suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
   
+  if b.hit then
+    require("util.sceneManager").changeScene("scene.menu")
+  end
+
   suit:Shape("NavbarBgLine", bgline, 0, height-3, lg.getWidth(), 3)
   suit.layout:reset(100*imgScale*scene.scale+10, 5, 10)
   local b1 = suit:Button(b1txt, { noScaleX = true, r=5 }, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
