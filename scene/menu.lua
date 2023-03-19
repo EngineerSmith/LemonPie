@@ -13,9 +13,7 @@ local file = require("util.file")
 
 local lg = love.graphics
 
-local scene = { 
-  introPos = { x = project.getActiveProjects() and -420 or -195 },
-}
+local scene = { }
 
 local getFont = function(size, name)
   local fontSize = math.floor(size * (scene.scale or 1))
@@ -62,28 +60,33 @@ local createDropText = function(effects, showAll)
 end
 
 local lastErrorMessage
+
+scene.errortext = sysl.new("center", {
+  color = {.9,.5,.5,1},
+  shadow_color = {.50,.23,.23,},
+})
+scene.errortext:send("[dropshadow=10]An error has occurred! Click to close.", nil, true)
+
 local showError = function(errorMessage, font)
   font = font or lg.getFont()
-
-  scene.errortext = sysl.new("center", {
-      color = {.9,.5,.5,1},
-      shadow_color = {.50,.23,.23,},
-      font = font,
-    })
-  scene.errortext:send("[dropshadow=10]An error has occurred!", nil, true)
-
-  local width = assets["image.logo"]:getWidth() * logoScale * scene.scale * 2
 
   scene.errormessagetext = sysl.new("left", {
       color = {1,1,1,1},
       font = font,
     })
-  scene.errormessagetext:send(errorMessage, width, true)
+  scene.errormessagetext:send(errorMessage, 560*scene.scale, true)
   lastErrorMessage = errorMessage
 end
 
-scene.load = function()
-  
+local closeError = function()
+  scene.errormessagetext = nil
+end
+
+scene.load = function(returned)
+  returned = returned and 30 or 0
+  scene.introPos = { x = project.getActiveProjects() and -420 - returned or -195 - returned }
+  scene.tween = nil
+
   assets["audio.ui.button"] = assets["audio.ui.button"] or love.audio.newSource(assets._path["audio.ui.button"], "static")
   assets["audio.ui.button"]:setVolume(0.2)
   
@@ -139,7 +142,8 @@ scene.resize = function(w, h)
 
   scene.subtext.default_font = font
   scene.droptext.default_font = font
-  if scene.errortext then
+  scene.errortext.default_font = font
+  if scene.errormessagetext then
     showError(lastErrorMessage, font)
   end
 
@@ -194,7 +198,7 @@ scene.update = function(dt)
   if state == "dropping" then
     scene.droptext:update(dt)
   end
-  if scene.errortext then
+  if scene.errormessagetext then
     scene.errortext:update(dt)
     scene.errormessagetext:update(dt)
   end
@@ -227,42 +231,40 @@ end
 
 scene.updateui = function()
   suit:enterFrame(1)
-  if state == "main" then
-    suit.layout:reset(50, 520, 50, 20)
-    suit.layout:translate(scene.introPos.x)
-    -- Previous Project
-    local projects = project.getActiveProjects()
-    if projects then
-      local b = suit:Button(previousProjectButton.text, previousProjectButton, suit.layout:up(365, 30))
-      if b.entered then
-        playEnteredSound()
-      elseif b.hovered then
-        local path = projects[1].path
-        local font = assets["font.regular.18"]
-        local w = math.min(font:getWidth(path)+20, 300*math.ceil(suit.scale))
-        local _, wrappedtext = font:getWrap(path, w)
-	      local h = (30 * #wrappedtext + font:getLineHeight() * (#wrappedtext + 1))
-        local x, y, w, _ = suit.layout:right(w, 30)
-        if y + h > settings._default.client.windowSize.height then
-          h = h + 10
-          y = settings._default.client.windowSize.height - h - 5
-        else
-          h = h * scene.scale
-        end
-        suit:Label(path, {valign = "top"}, x, y, w, h)
-        suit.layout:left(365, 30)
-      end
-      if b.hit then
-        scene.directorydropped(projects[1].path)
-      end
-    end
-    -- quit button
-    local b = suit:Button(quitButton.text, quitButton, suit.layout:up(140, 30))
-    if b.hit then
-      love.event.quit()
-    elseif b.entered then
+  suit.layout:reset(50, 520, 50, 20)
+  suit.layout:translate(scene.introPos.x)
+  -- Previous Project
+  local projects = project.getActiveProjects()
+  if projects then
+    local b = suit:Button(previousProjectButton.text, previousProjectButton, suit.layout:up(365, 30))
+    if b.entered then
       playEnteredSound()
+    elseif b.hovered then
+      local text = projects[1].name or projects[1].path
+      local font = assets["font.regular.18"]
+      local w = math.min(font:getWidth(text)+20, 300*math.ceil(suit.scale))
+      local _, wrappedtext = font:getWrap(text, w)
+      local h = (30 * #wrappedtext + font:getLineHeight() * (#wrappedtext + 1))
+      local x, y, w, _ = suit.layout:right(w, 30)
+      if y + h > settings._default.client.windowSize.height then
+        h = h + 10
+        y = settings._default.client.windowSize.height - h - 5
+      else
+        h = h * scene.scale
+      end
+      suit:Label(text, {valign = "top"}, x, y, w, h)
+      suit.layout:left(365, 30)
     end
+    if b.hit then
+      scene.directorydropped(projects[1].path)
+    end
+  end
+  -- quit button
+  local b = suit:Button(quitButton.text, quitButton, suit.layout:up(140, 30))
+  if b.hit then
+    love.event.quit()
+  elseif b.entered then
+    playEnteredSound()
   end
 end
 
@@ -299,13 +301,30 @@ scene.draw = function()
     end
   end
 
-  if scene.errortext then
-    scene.errortext:draw(x - iw/1.7, y+150*scene.scale)
+  if scene.errormessagetext then
+    lg.push("all")
+    lg.setColor(.3,.3,.3,.8)
+    y = y + 50
+
+    lg.rectangle("fill", x-300*scene.scale, y-200*scene.scale, 600*scene.scale,400*scene.scale)
+    scene.errortext:draw(x - iw/1.05, y-170*scene.scale)
+
     lg.setColor(0,0,0,.5)
-    local x, y = x-iw, y+180*scene.scale
-    lg.rectangle("fill", x-5, y, scene.errormessagetext.get.width+10, scene.errormessagetext.get.height)
-    scene.errormessagetext:draw(x, y)
+
+    local height = scene.errormessagetext.get.height
+    local posYScale = height > 310 and 3 or -20 -- make it a li'l comfy
+    local lx, ly = x-280*scene.scale, y-(140+posYScale)*scene.scale
+    lg.rectangle("fill", lx-5, ly, scene.errormessagetext.get.width+10, height)
+    scene.errormessagetext:draw(lx, ly)
+
+    y = y - 50
+    lg.pop()
   end
+  
+  lg.push("all")
+  lg.setColor(1,1,1)
+  suit:draw(1)
+  lg.pop()
 
   lg.setColor(0,0,0,1-(state == "main" and 1 or .3))
   lg.rectangle("fill", 0,0, lg:getDimensions())
@@ -317,7 +336,6 @@ scene.draw = function()
     lg.draw(assets["icon.import"], dropX-iw/4, dropY-ih/4, 0, 2/4)
   end
   
-  suit:draw(1)
   lg.pop()
 end
 
@@ -337,6 +355,12 @@ scene.keypressed = function(...)
   suit:keypressed(...)
 end
 
+scene.mousepressed = function(_,_, button)
+  if button == 1 then
+    closeError()
+  end
+end
+
 scene.directorydropped = function(path)
   logger.info("Attempting to open project at", path)
   local project, errorMessage = project.new(path)
@@ -346,6 +370,7 @@ scene.directorydropped = function(path)
     return
   end
   scene.stoppeddropping() -- ensure stopped is called
+  love.window.focus()
   require("util.sceneManager").changeScene("scene.editor", project)
 end
 
@@ -357,6 +382,7 @@ scene.isdropping = function(x, y)
     state = "dropping"
     createDropText(true, true)
     isDropping = true
+    closeError()
   end
 end
 

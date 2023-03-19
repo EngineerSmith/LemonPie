@@ -82,7 +82,7 @@ scene.updateui = function()
   local b = suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
   
   if b.hit then
-    require("util.sceneManager").changeScene("scene.menu")
+    require("util.sceneManager").changeScene("scene.menu", true)
   end
 
   suit:Shape("NavbarBgLine", bgline, 0, height-3, lg.getWidth(), 3)
@@ -106,7 +106,6 @@ scene.draw = function()
   lg.clear(0,0,0,1)
   scene.active.draw()
   suit:draw()
-  --lg.print(tostring(scene.drop))
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
   lg.setColor(1,1,1,1)

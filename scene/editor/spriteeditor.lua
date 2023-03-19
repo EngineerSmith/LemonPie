@@ -121,7 +121,7 @@ local drawGrid = function(x, y, tileW, tileH, w, h, scale)
 end
 
 spriteEditor.draw = function()
-  drawGrid(spriteEditor.gridX,spriteEditor.gridY, 36,36, lg.getDimensions())
+  drawGrid(spriteEditor.gridX,spriteEditor.gridY, 20,20, lg.getDimensions())
 end
 
 spriteEditor.resize = function(_, _)

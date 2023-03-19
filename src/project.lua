@@ -14,6 +14,9 @@ local projectFile = "/project.lemonpie"
 -- generic funcs
 
 project.new = function(path)
+  if not nfs.getInfo(path, "directory") then
+    return nil, "Could not find the path at "..tostring(path)
+  end
   if prevPath then
     project.addProject(prevPath)
   end
