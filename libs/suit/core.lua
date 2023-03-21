@@ -101,9 +101,9 @@ function suit:getStateName(id)
 end
 
 -- mouse handling
-function suit:mouseInRect(x,y,w,h)
-	return self.mouse_x >= x and self.mouse_y >= y and
-	       self.mouse_x <= x+w and self.mouse_y <= y+h
+function suit:mouseInRect(x,y,w,h, mouseX, mouseY)
+	return (mouseX or self.mouse_x) >= x   and (mouseY or self.mouse_y) >= y and
+	       (mouseX or self.mouse_x) <= x+w and (mouseY or self.mouse_y) <= y+h
 end
 
 function suit:registerMouseHit(id, ul_x, ul_y, hit)

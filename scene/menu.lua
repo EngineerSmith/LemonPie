@@ -188,11 +188,11 @@ scene.update = function(dt)
   scene.title:update(dt)
   if scene.title:is_finished() then
     scene.subtext:update(dt)
+    if not scene.tween then
+      scene.tween = flux.to(scene.introPos, 1, { x = 0 }):ease("backout")
+    end
     if scene.subtext:is_finished() then
       scene.droptext:update(dt)
-      if not scene.tween and scene.droptext:is_finished() then
-        scene.tween = flux.to(scene.introPos, 1, { x = 0 }):ease("backout")
-      end
     end
   end
   if state == "dropping" then

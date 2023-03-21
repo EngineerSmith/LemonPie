@@ -106,6 +106,9 @@ scene.draw = function()
   lg.clear(0,0,0,1)
   scene.active.draw()
   suit:draw()
+  if scene.active.drawUAboveUI then
+    scene.active.drawUAboveUI()
+  end
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
   lg.setColor(1,1,1,1)

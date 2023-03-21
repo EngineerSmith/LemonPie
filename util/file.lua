@@ -1,5 +1,12 @@
 local lfs = love.filesystem
-local file = {}
+local file = {
+    imageExtensions = {
+      "png",
+      "jpg",
+      "jpeg",
+      "bmp"
+    },
+  } 
 
 -- "a/game.zip", "game.zip" "game" -> "zip", zip", nil
 file.getFileExtension = function(path)
@@ -40,6 +47,16 @@ file.iterateDirectory = function(dir, path, callback, seperator)
       callback(loc, (path..item):lower())
     end
   end
+end
+
+file.isImageFile = function(path)
+  local extension = file.getFileExtension(path)
+  for _, e in ipairs(file.imageExtensions) do
+    if e == extension then
+      return true
+    end
+  end
+  return false
 end
 
 return file

@@ -27,6 +27,6 @@ return function(core, id, color, ...)
 		hit = hit,
 		hovered = hovered,
 		entered = entered,
-		left = left
+		left = left,
 	}
 end

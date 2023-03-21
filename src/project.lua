@@ -54,6 +54,7 @@ end
 project.loadProject = function(path)
   -- new Project
   if not lfs.getInfo(path..projectFile, "file") then
+    love.window.setTitle("LemonPie - "..path)
     return setmetatable({
         path = path,
       }, project)
@@ -62,6 +63,7 @@ project.loadProject = function(path)
     if not success then 
       return nil, "A problem appeared trying to load the project metadata.\n"..tostring(self)
     end
+    love.window.setTitle("LemonPie - "..(self.name or self.path))
     return setmetatable(self, project)
   end
 end
@@ -75,6 +77,7 @@ project.close = function(self)
   end
   project.addProject(prevPath)
   prevPath = nil
+  love.window.setTitle("LemonPie")
   return true
 end
 
