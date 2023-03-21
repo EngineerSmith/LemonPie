@@ -18,7 +18,9 @@ local dropping = {
 }
 
 love.window.focus = function() -- function to request focus of the window; useful to do when dropping has been successful 
-  sdl.SDL_RaiseWindow(sdl.SDL_GL_GetCurrentWindow())
+  if not love.window.hasFocus() or not love.window.hasMouseFocus() then
+    sdl.SDL_RaiseWindow(sdl.SDL_GL_GetCurrentWindow())
+  end
 end
 
 love.handlers[dropping.event] = function(x,y)

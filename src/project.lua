@@ -2,6 +2,9 @@ local project = { }
 project.__index = project
 
 local json = require("util.json")
+local file = require("util.file")
+local logger = require("util.logger")
+
 local nfs = require("libs.nativefs")
 
 local lfs = love.filesystem
@@ -53,17 +56,22 @@ end
 
 project.loadProject = function(path)
   -- new Project
-  if not lfs.getInfo(path..projectFile, "file") then
+  if not nfs.getInfo(path..projectFile, "file") then
+    logger.info("New project: creating new project profile")
     love.window.setTitle("LemonPie - "..path)
     return setmetatable({
         path = path,
+        spritesheets = { },
       }, project)
   else -- existing Project
+    logger.info("Pre-existing project: attempting to open project profile")
     local success, self = json.decode(path..projectFile, true)
     if not success then 
       return nil, "A problem appeared trying to load the project metadata.\n"..tostring(self)
     end
+    logger.info("Opened profile profile")
     love.window.setTitle("LemonPie - "..(self.name or self.path))
+    self.spritesheets = self.spritesheets or { }
     return setmetatable(self, project)
   end
 end
@@ -85,6 +93,24 @@ project.saveProject = function(self)
   local success, errorMessage = json.encode(self.path..projectFile, self, true)
   if not success then
     return errorMessage
+  end
+end
+
+project.addSpritesheet = function(self, path)
+  local i, j = path:find(self.path, 1, true)
+  if i == 1 then
+    path = path:sub(j+1):gsub("\\", "/")
+    for _, spritesheet in ipairs(self.spritesheets) do
+      if spritesheet.path == path then
+        return "alreadyadded"
+      end
+    end
+    logger.info("Added spritesheet at", path)
+    table.insert(self.spritesheets, {
+        path = path,
+      })
+  else
+    return "notinproject"
   end
 end
 

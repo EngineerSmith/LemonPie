@@ -53,7 +53,7 @@ file.isImageFile = function(path)
   local extension = file.getFileExtension(path)
   for _, e in ipairs(file.imageExtensions) do
     if e == extension then
-      return true
+      return true, e
     end
   end
   return false

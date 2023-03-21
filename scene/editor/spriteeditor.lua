@@ -8,6 +8,7 @@ if isCursorSupported then
 end
 
 local sysl = require("libs.SYSL-Text")
+local nfs = require("libs.nativefs")
 
 local settings = require("util.settings")
 local logger = require("util.logger")
@@ -20,10 +21,12 @@ local spriteEditor = {
 }
 
 spriteEditor.load = function(project, suit)
+  spriteEditor.project = project
   spriteEditor.suit = suit
 end
 
 spriteEditor.unload = function()
+  spriteEditor.project = nil
   if isCursorSupported then
     love.mouse.setCursor(nil)
   end
@@ -154,12 +157,7 @@ spriteEditor.drawUAboveUI = function()
   if spriteEditor.isdroppingSpritesheet then
     local h = spriteEditor.spritesheetdroppingText.get.height
     local targetY = spriteEditor.isdroppingSpritesheet-h/2
-    if targetY > lg.getHeight()-h then
-      targetY = lg.getHeight() - h
-    end
-    if targetY < scrollHitbox[2] then
-      targetY = scrollHitbox[2]
-    end
+    targetY = math.max(scrollHitbox[2], math.min(targetY, lg.getHeight()-h))
     spriteEditor.spritesheetdroppingText:draw(0,targetY)
   end
   if spriteEditor.img then
@@ -175,15 +173,71 @@ spriteEditor.directorydropped = function(directory)
   
 end
 
+local buttonlist = {
+  "No", "Yes", escapebutton = 1, enterbutton = 2,
+}
 spriteEditor.filedropped = function(file)
   local x,y,w,h = unpack(scrollHitbox)
   if spriteEditor.suit:mouseInRect(x,y,w,h, love.mouse.getPosition()) then
-    if fileUtil.isImageFile(file:getFilename()) then
-      local data = file:read("data")
+    local filepath = file:getFilename()
+    local success, extension = fileUtil.isImageFile(filepath)
+    if success then
+      ::loopback::
+      local result = spriteEditor.project:addSpritesheet(filepath)
+      if result then
+        logger.warn("file dropped could not be added:", result)
+        if result == "notinproject" then
+          local filename = fileUtil.getFileName(filepath).."."..extension
+          local slash = spriteEditor.project.path:find("\\", 1, true) and "\\" or "/"
+          local newPath = spriteEditor.project.path..slash..filename
+          local isFileAlready = nfs.getInfo(newPath, "file")
+          love.window.focus()
+          local pressedbutton = love.window.showMessageBox("Dropped image is not in your project!",
+            "The dropped image ("..tostring(filepath)..") is not within the project directory.\n\nWould you like to copy it into your project?\n"..
+              (isFileAlready and "\n  There is already a file with this name at this location, so it will be overwritten!\n" or "").."\t"..newPath,
+            buttonlist, "warning", true)
+          if buttonlist[pressedbutton] == "Yes" then
+            logger.info("Image being copied into project directory")
+            local newfile = nfs.newFile(newPath)
+            newfile:open("w")
+            local success, message = newfile:write(file:read("data"))
+            file:close()
+            newfile:close()
+            file, newfile = newfile, nil
+            if success then
+              logger.info("Successfully copied image into project directory!")
+
+              local success, message = file:open("r")
+              if not success then
+                logger.error("Could not open file again in read mode after closing it in write. Realistically it should never hit this point; so tell someone:", message)
+                love.window.focus()
+                love.window.showMessageBox("Error...",
+                  "You shouldn't see this message box ever; but if you do something has gone wrong trying to open the copied file after it successfully copied.\n\nTell a programmer, or try dropping the newly copied file in.\n\n"..tostring(message),
+                  "error", true)
+                return
+              end
+
+              filepath = newPath
+              goto loopback -- I'm lazy today; goto are fine, so go cry to someone else future me
+            else
+              logger.error("Could not copy file into project directory:", message)
+              love.window.focus()
+              love.window.showMessageBox("Could not copy", "An error occured when trying to copy image into project directory:\n\n"..tostring(message), "error", true)
+              return
+            end
+          else
+            logger.info("(user choice) image not copied to project directory")
+            file:close()
+            return
+          end
+        end
+      end
+      local data = file:read("data", file:getSize())
       spriteEditor.img = lg.newImage(data)
       love.window.focus()
     end
   end
+  file:close()
 end
 
 spriteEditor.isdropping = function(mx, my)
