@@ -176,10 +176,12 @@ spriteEditor.directorydropped = function(directory)
 end
 
 spriteEditor.filedropped = function(file)
-  if spriteEditor.isdroppingSpritesheet then
+  local x,y,w,h = unpack(scrollHitbox)
+  if spriteEditor.suit:mouseInRect(x,y,w,h, love.mouse.getPosition()) then
     if fileUtil.isImageFile(file:getFilename()) then
       local data = file:read("data")
       spriteEditor.img = lg.newImage(data)
+      love.window.focus()
     end
   end
 end
