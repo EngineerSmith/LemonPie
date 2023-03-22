@@ -59,17 +59,10 @@ sceneManager.changeScene = function(sceneRequire, ...)
   for _, v in ipairs(sceneManager.sceneHandlers) do
     love[v] = scene[v] or sceneManager.nilFunc
   end
-  if love["quit"] ~= sceneManager.nilFunc then
-    love["quit"] = sceneManager.quit
-  end
   sceneManager.currentScene = scene
   collectgarbage("collect")
   collectgarbage("collect")
   love.load(...)
-end
-
-sceneManager.quit = function()
-  return sceneManager.currentScene.quit()
 end
 
 return sceneManager

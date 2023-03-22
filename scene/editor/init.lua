@@ -37,6 +37,21 @@ scene.unload = function()
   icons = { }
 end
 
+local buttonlist = {
+  "Save & Close", "Don't Save", "Cancel", escapebutton = 3, enterbutton = 1,
+}
+
+scene.quit = function()
+  if scene.project.dirty then
+    local pressedbutton = love.window.showMessageBox("Unsaved work, are you sure you want to quit?", "Are you aure you want to quit without saving?", buttonlist)
+    if pressedbutton == 1 then
+      scene.project:saveProject()
+    elseif pressedbutton == 3 then
+      return true
+    end
+  end
+end
+
 scene.resize = function(w, h)
   local wsize = settings._default.client.windowSize
   local tw, th = wsize.width, wsize.height
@@ -82,7 +97,9 @@ scene.updateui = function()
   local b = suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
   
   if b.hit then
-    require("util.sceneManager").changeScene("scene.menu", true)
+    if not scene.quit() then -- lazy hack, probably should change
+      require("util.sceneManager").changeScene("scene.menu", true)
+    end
   end
 
   suit:Shape("NavbarBgLine", bgline, 0, height-3, lg.getWidth(), 3)
@@ -106,8 +123,8 @@ scene.draw = function()
   lg.clear(0,0,0,1)
   scene.active.draw()
   suit:draw()
-  if scene.active.drawUAboveUI then
-    scene.active.drawUAboveUI()
+  if scene.active.drawAboveUI then
+    scene.active.drawAboveUI()
   end
   lg.setColor(1,0,0,1)
   lg.circle("fill", _x, _y, 20)
@@ -149,6 +166,12 @@ end
 
 scene.keypressed = function(...)
   suit:keypressed(...)
+end
+
+scene.keyreleased = function(_, scancode)
+  if scancode == "s" and love.keyboard.isScancodeDown("rctrl", "lctrl") then
+    scene.project:saveProject()
+  end
 end
 
 scene.mousepressed = function(...)

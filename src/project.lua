@@ -62,6 +62,7 @@ project.loadProject = function(path)
     return setmetatable({
         path = path,
         spritesheets = { },
+        dirty = false,
       }, project)
   else -- existing Project
     logger.info("Pre-existing project: attempting to open project profile")
@@ -69,9 +70,10 @@ project.loadProject = function(path)
     if not success then 
       return nil, "A problem appeared trying to load the project metadata.\n"..tostring(self)
     end
-    logger.info("Opened profile profile")
+    logger.info("Opened project profile")
     love.window.setTitle("LemonPie - "..(self.name or self.path))
     self.spritesheets = self.spritesheets or { }
+    self.dirty = false
     return setmetatable(self, project)
   end
 end
@@ -90,9 +92,13 @@ project.close = function(self)
 end
 
 project.saveProject = function(self)
-  local success, errorMessage = json.encode(self.path..projectFile, self, true)
-  if not success then
-    return errorMessage
+  if self.dirty then
+    self.dirty = nil
+    local success, errorMessage = json.encode(self.path..projectFile, self, true)
+    if not success then
+      return errorMessage
+    end
+    self.dirty = false
   end
 end
 
@@ -109,6 +115,7 @@ project.addSpritesheet = function(self, path)
     table.insert(self.spritesheets, {
         path = path,
       })
+    self.dirty = true
   else
     return "notinproject"
   end

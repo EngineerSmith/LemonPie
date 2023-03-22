@@ -50,11 +50,11 @@ local tabWidthChanging = false
 local tabNotHeld = false
 
 local scrollHeight = 0
-local scrollHitbox = nil
+spriteEditor.scrollHitbox = nil
 
 local makeDroptext = function(font)
-  if (spriteEditor.spritesheetdroppingText and spriteEditor.spritesheetdroppingText.maxWidth ~= scrollHitbox[3]) or 
-      (not spriteEditor.spritesheetdroppingText and scrollHitbox) then
+  if (spriteEditor.spritesheetdroppingText and spriteEditor.spritesheetdroppingText.maxWidth ~= spriteEditor.scrollHitbox[3]) or 
+      (not spriteEditor.spritesheetdroppingText and spriteEditor.scrollHitbox) then
     spriteEditor.spritesheetdroppingText = sysl.new("center", {
         color = {.9,.9,.9,1},
         shadow_color = {.2,.2,.2},
@@ -62,8 +62,8 @@ local makeDroptext = function(font)
         font = font,
       })
     spriteEditor.spritesheetdroppingText.bounce_height = 1
-    spriteEditor.spritesheetdroppingText.maxWidth = scrollHitbox[3]
-    spriteEditor.spritesheetdroppingText:send("[bounce=8][dropshadow=10]Drop Spritesheet[/bounce]", scrollHitbox[3], true)
+    spriteEditor.spritesheetdroppingText.maxWidth = spriteEditor.scrollHitbox[3]
+    spriteEditor.spritesheetdroppingText:send("[bounce=8][dropshadow=10]Drop Spritesheet[/bounce]", spriteEditor.scrollHitbox[3], true)
   end
 end
 
@@ -76,7 +76,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
   local label = suit:Label("Spritesheets", {noBox = true}, suit.layout:up(width-5, lg.getFont():getHeight()))
   suit:Shape(-1, {.6,.6,.6}, {noScaleY = true}, x,label.y+label.h,width-5,2*suit.scale)
 
-  scrollHitbox = {x, label.y+label.h, (width-5)*suit.scale, lg.getHeight()}
+  spriteEditor.scrollHitbox = {x, label.y+label.h, (width-5)*suit.scale, lg.getHeight()}
 
   makeDroptext(lg.getFont())
 
@@ -153,11 +153,11 @@ spriteEditor.draw = function()
   drawGrid(spriteEditor.gridX,spriteEditor.gridY, 20,20, lg.getDimensions())
 end
 
-spriteEditor.drawUAboveUI = function()
+spriteEditor.drawAboveUI = function()
   if spriteEditor.isdroppingSpritesheet then
     local h = spriteEditor.spritesheetdroppingText.get.height
     local targetY = spriteEditor.isdroppingSpritesheet-h/2
-    targetY = math.max(scrollHitbox[2], math.min(targetY, lg.getHeight()-h))
+    targetY = math.max(spriteEditor.scrollHitbox[2], math.min(targetY, lg.getHeight()-h))
     spriteEditor.spritesheetdroppingText:draw(0,targetY)
   end
   if spriteEditor.img then
@@ -169,94 +169,10 @@ spriteEditor.resize = function(_, _)
   scrollHeight = 0
 end
 
-spriteEditor.directorydropped = function(directory)
-  
-end
-
-local buttonlist = {
-  "No", "Yes", escapebutton = 1, enterbutton = 2,
-}
-spriteEditor.filedropped = function(file)
-  local x,y,w,h = unpack(scrollHitbox)
-  if spriteEditor.suit:mouseInRect(x,y,w,h, love.mouse.getPosition()) then
-    local filepath = file:getFilename()
-    local success, extension = fileUtil.isImageFile(filepath)
-    if success then
-      ::loopback::
-      local result = spriteEditor.project:addSpritesheet(filepath)
-      if result then
-        logger.warn("file dropped could not be added:", result)
-        if result == "notinproject" then
-          local filename = fileUtil.getFileName(filepath).."."..extension
-          local slash = spriteEditor.project.path:find("\\", 1, true) and "\\" or "/"
-          local newPath = spriteEditor.project.path..slash..filename
-          local isFileAlready = nfs.getInfo(newPath, "file")
-          love.window.focus()
-          local pressedbutton = love.window.showMessageBox("Dropped image is not in your project!",
-            "The dropped image ("..tostring(filepath)..") is not within the project directory.\n\nWould you like to copy it into your project?\n"..
-              (isFileAlready and "\n  There is already a file with this name at this location, so it will be overwritten!\n" or "").."\t"..newPath,
-            buttonlist, "warning", true)
-          if buttonlist[pressedbutton] == "Yes" then
-            logger.info("Image being copied into project directory")
-            local newfile = nfs.newFile(newPath)
-            newfile:open("w")
-            local success, message = newfile:write(file:read("data"))
-            file:close()
-            newfile:close()
-            file, newfile = newfile, nil
-            if success then
-              logger.info("Successfully copied image into project directory!")
-
-              local success, message = file:open("r")
-              if not success then
-                logger.error("Could not open file again in read mode after closing it in write. Realistically it should never hit this point; so tell someone:", message)
-                love.window.focus()
-                love.window.showMessageBox("Error...",
-                  "You shouldn't see this message box ever; but if you do something has gone wrong trying to open the copied file after it successfully copied.\n\nTell a programmer, or try dropping the newly copied file in.\n\n"..tostring(message),
-                  "error", true)
-                return
-              end
-
-              filepath = newPath
-              goto loopback -- I'm lazy today; goto are fine, so go cry to someone else future me
-            else
-              logger.error("Could not copy file into project directory:", message)
-              love.window.focus()
-              love.window.showMessageBox("Could not copy", "An error occured when trying to copy image into project directory:\n\n"..tostring(message), "error", true)
-              return
-            end
-          else
-            logger.info("(user choice) image not copied to project directory")
-            file:close()
-            return
-          end
-        end
-      end
-      local data = file:read("data", file:getSize())
-      spriteEditor.img = lg.newImage(data)
-      love.window.focus()
-    end
-  end
-  file:close()
-end
-
-spriteEditor.isdropping = function(mx, my)
-  if scrollHitbox then
-    local x,y,w,h = unpack(scrollHitbox)
-    if spriteEditor.suit:mouseInRect(x,y,w,h, mx,my) then
-      spriteEditor.isdroppingSpritesheet = my
-    else
-      spriteEditor.isdroppingSpritesheet = false
-    end
-  end
-end
-
-spriteEditor.stoppeddropping = function()
-  spriteEditor.isdroppingSpritesheet = false
-end
+require("scene.editor.spriteeditor.dropping")(spriteEditor)
 
 spriteEditor.mousepressed = function(x,y, button)
-  if button == 3 and scrollHitbox and spriteEditor.suit:mouseInRect(unpack(scrollHitbox)) then
+  if button == 3 and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
     scrollHeight = 0
   end
   if button == 1 and not spriteEditor.suit:anyHovered() and not tabWidthChanging then
@@ -282,7 +198,7 @@ spriteEditor.mousereleased = function(_,_, button)
 end
 
 spriteEditor.wheelmoved = function(_, y)
-  if not movingGrid and scrollHitbox and spriteEditor.suit:mouseInRect(unpack(scrollHitbox)) then
+  if not movingGrid and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
     scrollHeight = scrollHeight + y * settings.client.scrollspeed
     if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
   end
