@@ -15,7 +15,7 @@ local scene = {
 
 local icons = { }
 
-scene.load = function(project)
+scene.load = function(project, projecterrors, start)
   scene.active = scene.spriteEditor
   scene.project = project
 
@@ -27,6 +27,9 @@ scene.load = function(project)
   
   scene.spriteEditor.load(project, suit)
   scene.resize(lg.getDimensions())
+  local stop = love.timer.getTime()
+  
+  logger.info(("Took %.4f seconds to load project"):format(stop-start))
 end
 
 scene.unload = function()
@@ -70,7 +73,7 @@ scene.resize = function(w, h)
   lg.setFont(assets[fontName])
   logger.info("Set font size to", fontSize)
 
-  local fontSize = math.floor(10 * scene.scale)
+  local fontSize = math.floor(12 * scene.scale)
   local fontName = "font.regular."..fontSize
   if not assets[fontName] then
     assets[fontName] = lg.newFont(assets._path["font.regular"], fontSize)

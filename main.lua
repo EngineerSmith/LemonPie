@@ -14,6 +14,8 @@ local dropping = require("util.isdropping")
 local utf8 = require("util.utf8")
 local flux = require("libs.flux")
 
+love.keyboard.setKeyRepeat(true)
+
 local le = love.event
 local processEvents = function()
   dropping.eventUpdate()

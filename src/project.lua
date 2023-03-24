@@ -18,7 +18,7 @@ local projectFile = "/project.lemonpie"
 
 project.new = function(path)
   if not nfs.getInfo(path, "directory") then
-    return nil, "Could not find the path at "..tostring(path)
+    return nil, "Could not find the directory at "..tostring(path)
   end
   if prevPath then
     project.addProject(prevPath)
@@ -27,7 +27,7 @@ project.new = function(path)
   prevPath = path
   project.addProject(path)
 
-  return project.loadProject(path)
+  return project
 end
 
 project.getActiveProjects = function()
@@ -114,6 +114,7 @@ project.addSpritesheet = function(self, path)
     logger.info("Added spritesheet at", path)
     table.insert(self.spritesheets, {
         path = path,
+        name = file.getFileName(path),
       })
     self.dirty = true
   else

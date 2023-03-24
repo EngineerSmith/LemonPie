@@ -50,8 +50,10 @@ return setmetatable({
 	Checkbox = function(...) return instance:Checkbox(...) end,
 	Input = function(...) return instance:Input(...) end,
 	Slider = function(...) return instance:Slider(...) end,
-	Shape = function(...) return instance:Shape(...) end,
 
+	Shape = function(...) return instance:Shape(...) end,
+	Image = function(...) return instance:Image(...) end,
+	
 	-- layout
 	layout = instance.layout
 }, {

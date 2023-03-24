@@ -78,6 +78,24 @@ theme.Label = function(text, opt, x, y, w, h)
   if not opt.noBox then
     theme.drawBox(x + opt.x, y - 5 + opt.y, w + opt.w, h + opt.h, c, (opt.x ~= 0 and opt.r or -opt.x)*3)
   end
+
+  if opt.oneLine then
+    local _, wrappedtext = font:getWrap(text, w - 4)
+    text = wrappedtext[1] or text
+    text = text:match("^%s*(.-)%s*$")
+    if #wrappedtext > 1 then
+      local eclipseWidth = font:getWidth("...")
+      for i=0,-4,-1 do
+        local sub = i == 0 and text or text:sub(1,i)
+        local width = font:getWidth(sub)
+        if width+eclipseWidth <= w-4 then
+          text = sub .. "..."
+          break
+        end
+      end
+    end
+  end
+  
   lg.setColor(c.fg or c)
   lg.printf(text or opt.text, font, x + 2, y, w - 4, opt.align or "center")
 end
@@ -203,9 +221,9 @@ theme.Input = function(input, opt, x, y, w, h)
     -- candidate text
     local tw = font:getWidth(input.text)
     local ctw = font:getWidth(input.candidate_text.text)
-    lg.print(input.candidate_text.text, font, x + tw, y (h - th) / 2)
+    lg.print(input.candidate_text.text, font, x + tw, y + (h - th) / 2)
     -- candidate text rect
-    lg.rectangle("line", x + tw, y (h - th) / 2, ctw, th)
+    lg.rectangle("line", x + tw, y + (h - th) / 2, ctw, th)
     -- cursor
     if opt.hasKeyboardFocus and love.timer.getTime() % 1 > .5 then
       local ct = input.candidate_text

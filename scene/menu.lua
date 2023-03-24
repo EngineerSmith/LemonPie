@@ -361,17 +361,43 @@ scene.mousepressed = function(_,_, button)
   end
 end
 
+local _directorydroppedError = function(path, errorMessage)
+  logger.error("Failed to open project at", path, ", because: ", errorMessage)
+  showError(errorMessage)
+end
+
 scene.directorydropped = function(path)
   logger.info("Attempting to open project at", path)
   local project, errorMessage = project.new(path)
   if not project then
-    logger.error("Failed to open project at", path, ", because: ", errorMessage)
-    showError(errorMessage)
+    _directorydroppedError()
     return
   end
+
+  do -- Basic loading screen if spritesheets are large
+    lg.push("all")
+    lg.clear(0,0,0,1)
+    lg.setColor(1,1,1,1)
+    local font = lg.getFont()
+    local width, height = font:getWidth("Loading Project..."), font:getHeight()
+    lg.print("Loading Project...", lg.getWidth()/2-width/2, lg.getHeight()/1.2-height/2)
+    lg.present()
+    lg.pop()
+  end
+
+  logger.info("Project data load, start loading project")
+
+  local start = love.timer.getTime()
+  local project, errorMessage = project.loadProject(path)
+
+  if not project then
+    _directorydroppedError()
+    return
+  end
+
   scene.stoppeddropping() -- ensure stopped is called
   love.window.focus()
-  require("util.sceneManager").changeScene("scene.editor", project)
+  require("util.sceneManager").changeScene("scene.editor", project, errorMessage, start)
 end
 
 local isDropping = false

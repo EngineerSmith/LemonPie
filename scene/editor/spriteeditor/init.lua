@@ -1,10 +1,11 @@
-local lg = love.graphics
+local lg, lm = love.graphics, love.mouse
 
-local isCursorSupported = love.mouse.isCursorSupported()
-local cursor_sizewe, cursor_sizeall
+local isCursorSupported = lm.isCursorSupported()
+local cursor_sizewe, cursor_sizeall, cursor_ibeam
 if isCursorSupported then
-  cursor_sizewe = love.mouse.getSystemCursor("sizewe")
-  cursor_sizeall = love.mouse.getSystemCursor("sizeall")
+  cursor_sizewe = lm.getSystemCursor("sizewe")
+  cursor_sizeall = lm.getSystemCursor("sizeall")
+  cursor_ibeam = lm.getSystemCursor("ibeam")
 end
 
 local sysl = require("libs.SYSL-Text")
@@ -23,12 +24,38 @@ local spriteEditor = {
 spriteEditor.load = function(project, suit)
   spriteEditor.project = project
   spriteEditor.suit = suit
+
+  local errors = nil
+
+  spriteEditor.spritesheets = { }
+  for _, spritesheet in ipairs(spriteEditor.project.spritesheets) do
+    local filepath = spriteEditor.project.path..spritesheet.path
+    local info = nfs.getInfo(filepath, "file")
+    if info then
+      local data = nfs.read("data", filepath)
+      table.insert(spriteEditor.spritesheets, {
+          path = spritesheet.path,
+          fullpath = filepath,
+          text = spritesheet.name or fileUtil.getFileName(spritesheet.path),
+          image = lg.newImage(data),
+          time = info.modtime,
+          editing = false,
+        })
+    else    --- add new line, or start with nothing
+      errors = (errors and errors.."\n" or "").."Could not find: "..tostring(fullpath)
+    end
+  end
+  if errors then
+    logger.error("Issues with finding spritesheets added to project:\n", errors)
+  end
+  logger.info("Loaded", #spriteEditor.spritesheets, "spritesheets")
+  return errors
 end
 
 spriteEditor.unload = function()
   spriteEditor.project = nil
   if isCursorSupported then
-    love.mouse.setCursor(nil)
+    lm.setCursor(nil)
   end
 end
 
@@ -69,6 +96,60 @@ end
 
 local subtitleGrey = {love.math.colorFromBytes(210,210,210)}
 
+local imageOpt = { background = true, noScaleY = true, }
+local inputColor = { normal = { bg = {.6,.6,.6}, fg = {1,1,1}}}
+
+local drawSpritesheetUi = function(spritesheet, width)
+  local suit = spriteEditor.suit
+  
+  local spritesheetOpt = { 
+    font = suit.subtitleFont,
+    noScaleY = true,
+    noBox = true,
+    align = "left",
+    oneLine = true,
+    id = spritesheet,
+  }
+  local height = spritesheetOpt.font:getHeight()
+  local x,y,w,h = suit.layout:down(width, height)
+  suit.layout:padding(20,5)
+  
+  local state
+  
+  if not spritesheet.editing then
+    state = suit:Label(spritesheet.text, spritesheetOpt, x,y,w,h)
+    if state.hit then
+      spritesheet.editing = true
+      suit:grabKeyboardFocus(spritesheetOpt.id)
+    end
+  else
+    spritesheetOpt.color = inputColor
+    state = suit:Input(spritesheet, spritesheetOpt, x-1,y,w+2,h)
+    if state.submitted or (not spritesheetOpt.hasKeyboardFocus and not suit:isActive(spritesheet)) then
+      spritesheet.editing = false
+      for _, ss in ipairs(spriteEditor.project.spritesheets) do
+        if ss.path == spritesheet.path then
+          if ss.name ~= spritesheet.text then
+            ss.name = spritesheet.text
+            spriteEditor.project.dirty = true
+          end
+          break
+        end
+      end
+    end
+  end
+
+  if state.entered and cursor_ibeam then
+    lm.setCursor(cursor_ibeam)
+  elseif state.left then
+    lm.setCursor(nil)
+  end
+
+  suit:Image(spritesheet.fullpath.."image", spritesheet.image, imageOpt, suit.layout:down(width, 120*suit.scale))
+
+  suit.layout:padding(20,20)
+end
+
 local drawSpriteSheetTabUI = function(x, y, width)
   local suit = spriteEditor.suit
 
@@ -83,23 +164,23 @@ local drawSpriteSheetTabUI = function(x, y, width)
   if spriteEditor.isdroppingSpritesheet then
     local s = suit:Shape("droppingSpritesheet", {.1,.1,.1,.7}, {noScaleY = true}, x, label.y+label.h+2*suit.scale, width-5, lg.getHeight())
   end
-  suit.layout:reset(x, label.y+label.h+5+scrollHeight, 10,10)
 
-  suit:Label("Hello World tooooooooooooo longggggggg?", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
-  suit:Label("Hello World", {noBox = true, noScaleY = true, font = suit.subtitleFont, align = "left", color = subtitleGrey}, suit.layout:down(width-5, suit.subtitleFont:getHeight()))
+  suit.layout:reset(x+5, label.y+label.h+10+scrollHeight, 20,5)
+
+  for _, spritesheet in ipairs(spriteEditor.spritesheets) do
+    drawSpritesheetUi(spritesheet, width-15)
+  end
 
   local dragBar = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())
 
-  local isPrimaryMousePressed = love.mouse.isDown(1)
+  local isPrimaryMousePressed = lm.isDown(1)
 
   if dragBar.entered and isPrimaryMousePressed and not tabWidthChanging then
     tabNotHeld = true
   end
   if dragBar.hovered and not movingGrid then
-    if isCursorSupported and cursor_sizewe then love.mouse.setCursor(cursor_sizewe) end
+    if isCursorSupported and cursor_sizewe then lm.setCursor(cursor_sizewe) end
     if not isPrimaryMousePressed then
       tabNotHeld = false
     elseif not tabNotHeld then -- and isPrimaryMousePressed
@@ -107,7 +188,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
     end
   end
   if tabWidthChanging then
-    tabWidth = validateTabWidth(love.mouse.getX() / suit.scale)
+    tabWidth = validateTabWidth(lm.getX() / suit.scale)
   end
   if tabWidthChanging and not isPrimaryMousePressed then
     tabWidthChanging = false
@@ -115,12 +196,12 @@ local drawSpriteSheetTabUI = function(x, y, width)
     settings.client.spritesheetTabWidth = tabWidth
     if not dragBar.hovered then
       tabNotHeld = false
-      if isCursorSupported then love.mouse.setCursor(nil) end
+      if isCursorSupported then lm.setCursor(nil) end
     end
   end
   if dragBar.left and not tabWidthChanging and not movingGrid then
     tabNotHeld = false
-    if isCursorSupported then love.mouse.setCursor(nil) end
+    if isCursorSupported then lm.setCursor(nil) end
   end
 end
 
@@ -178,7 +259,7 @@ spriteEditor.mousepressed = function(x,y, button)
   if button == 1 and not spriteEditor.suit:anyHovered() and not tabWidthChanging then
     movingGrid = true
     if cursor_sizeall then
-      love.mouse.setCursor(cursor_sizeall)
+      lm.setCursor(cursor_sizeall)
     end
   end
 end
@@ -193,13 +274,13 @@ end
 spriteEditor.mousereleased = function(_,_, button)
   if movingGrid then
     movingGrid = false
-    love.mouse.setCursor(nil)
+    lm.setCursor(nil)
   end
 end
 
 spriteEditor.wheelmoved = function(_, y)
   if not movingGrid and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
-    scrollHeight = scrollHeight + y * settings.client.scrollspeed
+    scrollHeight = scrollHeight + y * settings.client.scrollspeed * spriteEditor.suit.scale
     if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
   end
 end

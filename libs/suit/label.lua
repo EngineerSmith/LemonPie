@@ -33,6 +33,7 @@ return function(core, text, ...)
 	opt.hit, opt.hovered, opt.entered, opt.left = hit, hovered, entered, left
 
 	core:registerDraw(opt.draw or core.theme.Label, text, opt, x,y,w,h)
+	
 	return {
 		id = opt.id,
 		hit = hit,

@@ -10,9 +10,16 @@ end
 
 return function(core, input, ...)
 	local opt, x,y,w,h = core.getOptionsAndSize(...)
-	x, y, w, h = x * core.scale, y * core.scale, w * core.scale, h * core.scale
+	
+	if not opt.noScaleX then
+    x, w = x * core.scale, w * core.scale
+  end
+  if not opt.noScaleY then
+    y, h  = y * core.scale, h * core.scale
+  end
 
 	opt.id = opt.id or input
+	opt.font = opt.font or love.graphics.getFont()
 
 	local text_width = opt.font:getWidth(input.text)
 	w = w or text_width + 6

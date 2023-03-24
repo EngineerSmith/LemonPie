@@ -23,7 +23,9 @@ function suit.new(theme)
 		Checkbox = require(BASE.."checkbox"),
 		Input = require(BASE.."input"),
 		Slider = require(BASE.."slider"),
+
 		Shape = require(BASE.."shape"),
+		Image = require(BASE.."image"),
 
 		layout = require(BASE.."layout").new(),
 
@@ -200,14 +202,14 @@ function suit:enterFrame(mouseButton)
 
 	self.hovered_last, self.hovered = self.hovered, nil
 	self:updateMouse(love.mouse.getX(), love.mouse.getY(), love.mouse.isDown(mouseButton or 1))
-	self.key_down, self.textchar = nil, ""
 	self:grabKeyboardFocus(NONE)
 	self.hit = nil
-
+	
 	self.wheel_x, self.wheel_y = 0,0
 end
 
 function suit:exitFrame()
+	self.key_down, self.textchar = nil, ""
 end
 
 -- draw
