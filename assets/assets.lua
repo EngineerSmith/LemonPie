@@ -14,6 +14,9 @@ return {
   ["icon.down"] = "assets/kenney/gameicons/down.png",
   ["icon.left"] = "assets/kenney/gameicons/left.png",
   ["icon.right"] = "assets/kenney/gameicons/right.png",
+  ["icon.updown"] = "assets/kenney/gameicons/scrollVertical.png",
+  ["icon.updown.up"] = "assets/kenney/gameicons/scrollVertical.png",
+  ["icon.updown.down"] = "assets/kenney/gameicons/scrollVertical.png",
 
   ["font.regular"] = "assets/fonts/OpenDyslexic-Regular.otf",
   ["font.bold"] = "assets/fonts/OpenDyslexic-Bold.otf",

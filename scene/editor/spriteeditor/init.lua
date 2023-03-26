@@ -138,7 +138,7 @@ local drawSpritesheetUi = function(spritesheet, width)
   
   if not spritesheet.editing then
     state = suit:Label(spritesheet.text, spritesheetOpt, x,y,w,h)
-    if state.hit then
+    if state.hit then -- TODO hover faint shape to show hover area
       spritesheet.editing = true
       suit:grabKeyboardFocus(spritesheetOpt.id)
       spritesheet.cursor = nil
@@ -171,13 +171,15 @@ local drawSpritesheetUi = function(spritesheet, width)
 
   suit.layout:padding(0,3)
   local scale, w,h = .3, assets["icon.trashcan"]:getDimensions()
-  suit:ImageButton(assets["icon.right"], {hovered = assets["icon.down"],noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-w*scale-1, h*scale*suit.scale))
+  suit:ImageButton(assets["icon.right"], {hovered = assets["icon.down"],noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-(w*scale*2), h*scale*suit.scale))
+  suit:ImageButton(assets["icon.updown"], {hovered = assets["icon.updown"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."updown"}, suit.layout:right(w*scale,h*scale*suit.scale))
   suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right())
   suit.layout:left()
+  suit.layout:left(width-(w*scale*2), h*scale*suit.scale)
 
-  suit:Shape(-1, {.5,.5,.5}, {noScaleY = true}, suit.layout:down(width, 1*suit.scale))
+  suit:Shape(-1, {.5,.5,.5}, {noScaleY = true}, suit.layout:down(width, 1*(suit.scale*1.5)))
 
-  suit.layout:padding(20,0)
+  suit.layout:padding(20,2)
 end
 
 local drawStencil = function(x,y,w,h)
