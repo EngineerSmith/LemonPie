@@ -1,10 +1,14 @@
 local lg = love.graphics
 
 local defaultBackgroundColor = {.15,.15,.15,1}
-local defaultDraw = function(image,x,y,w,h, opt, core, r,g,b,a)
+local defaultDraw = function(image,x,y,w,h, opt, core, hovered, r,g,b,a)
   if opt.background then
     lg.setColor(opt.backgroundColor or defaultBackgroundColor)
     lg.rectangle("fill", x-2,y-2,w+4,h+4)
+    if hovered and opt.hoverBoarder then
+      lg.setColor(opt.hoverBoarder)
+      lg.rectangle("line", x-2,y-2,w+4,h+4)
+    end
   end
   lg.setColor(r,g,b,a)
   local iw, ih = image:getDimensions()
@@ -28,7 +32,7 @@ return function(core, id, image, ...)
   if not opt.noScaleY then
     y, h  = y * core.scale, h * core.scale
   end
-  opt.id = opt.id or id
+  opt.id = id or opt.id
 
   opt.state = core:registerHitbox(opt.id, x,y,w,h)
 
@@ -39,7 +43,7 @@ return function(core, id, image, ...)
 
   opt.hit, opt.hovered, opt.entered, opt.left = hit, hovered, entered, left
 
-  core:registerDraw(opt.draw or defaultDraw, image, x,y,w,h, opt, core, lg.getColor())
+  core:registerDraw(opt.draw or defaultDraw, image, x,y,w,h, opt, core, hovered, lg.getColor())
 
   return {
     id = opt.id,

@@ -1,11 +1,12 @@
 local lg, lm = love.graphics, love.mouse
 
 local isCursorSupported = lm.isCursorSupported()
-local cursor_sizewe, cursor_sizeall, cursor_ibeam
+local cursor_sizewe, cursor_sizeall, cursor_ibeam, cursor_hand
 if isCursorSupported then
   cursor_sizewe = lm.getSystemCursor("sizewe")
   cursor_sizeall = lm.getSystemCursor("sizeall")
   cursor_ibeam = lm.getSystemCursor("ibeam")
+  cursor_hand = lm.getSystemCursor("hand")
 end
 
 local sysl = require("libs.SYSL-Text")
@@ -78,6 +79,11 @@ spriteEditor.update = function(dt)
   if spriteEditor.spritesheetdroppingText then
     spriteEditor.spritesheetdroppingText:update(dt)
   end
+  if spriteEditor.scrollHitbox then
+    if spriteEditor.scrollHeight > 0 then spriteEditor.scrollHeight = spriteEditor.scrollHeight - dt*8*spriteEditor.scrollHeight end
+    local limit = (spriteEditor.scrollHitbox[4] - spriteEditor.scrollHitbox[2]) - spriteEditor.scrollHeightLimit
+    if spriteEditor.scrollHeight < limit then spriteEditor.scrollHeight = spriteEditor.scrollHeight + dt*8*(limit-spriteEditor.scrollHeight) end
+  end
 end
 
 local validateTabWidth = function(width)
@@ -91,7 +97,7 @@ settings.client.spritesheetTabWidth = tabWidth
 local tabWidthChanging = false
 local tabNotHeld = false
 
-local scrollHeight = 0
+spriteEditor.scrollHeight = 0
 spriteEditor.scrollHitbox = nil
 
 local makeDroptext = function(font)
@@ -111,12 +117,26 @@ end
 
 local subtitleGrey = {love.math.colorFromBytes(210,210,210)}
 
-local imageOpt = { background = true, noScaleY = true, }
+local imageOpt = { background = true, noScaleY = true, hoverBoarder = {.8,.8,.8} }
 local inputColor = { normal = { bg = {.6,.6,.6}, fg = {1,1,1}}}
 
 local undonaming = function(spritesheet, ss, name)
   spritesheet.text = name
   ss.name = name
+end
+
+spriteEditor.calculateScrollboxHeight = function()
+  local suit = spriteEditor.suit
+
+  local height = 0
+  local notExtended = (suit.subtitleFont:getHeight()+ 120*suit.scale + 30*suit.scale + 13) + (suit.scale*1.5) + 2
+  for _, spritesheet in ipairs(spriteEditor.spritesheets) do
+    height = height + notExtended
+    if spritesheet.extended then
+      height = height + 0 -- TODO
+    end
+  end
+  spriteEditor.scrollHeightLimit = height + 2 * suit.scale
 end
 
 local drawSpritesheetUi = function(spritesheet, width)
@@ -138,10 +158,12 @@ local drawSpritesheetUi = function(spritesheet, width)
   
   if not spritesheet.editing then
     state = suit:Label(spritesheet.text, spritesheetOpt, x,y,w,h)
-    if state.hit then -- TODO hover faint shape to show hover area
+    if state.hit then
       spritesheet.editing = true
       suit:grabKeyboardFocus(spritesheetOpt.id)
       spritesheet.cursor = nil
+    elseif state.hovered then
+      suit:Shape(-1, {.48,.48,.48}, {noScaleY=true}, x,y,w,h)
     end
   else
     spritesheetOpt.color = inputColor
@@ -167,7 +189,13 @@ local drawSpritesheetUi = function(spritesheet, width)
     lm.setCursor(nil)
   end
 
-  suit:Image(spritesheet.fullpath.."image", spritesheet.image, imageOpt, suit.layout:down(width, 120*suit.scale))
+  local state = suit:Image(spritesheet.fullpath.."image", spritesheet.image, imageOpt, suit.layout:down(width, 120*suit.scale))
+  if state.hovered and cursor_hand then
+    lm.setCursor(cursor_hand)
+  end
+  if state.left then
+    lm.setCursor(nil)
+  end
 
   suit.layout:padding(0,3)
   local scale, w,h = .3, assets["icon.trashcan"]:getDimensions()
@@ -211,7 +239,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
     local s = suit:Shape("droppingSpritesheet", {.1,.1,.1,.7}, {noScaleY = true}, x, label.y+label.h+2*suit.scale, width-5, lg.getHeight())
   end
 
-  suit.layout:reset(x+5, label.y+label.h+10+scrollHeight, 20,5)
+  suit.layout:reset(x+5, label.y+label.h+10+spriteEditor.scrollHeight, 20,5)
 
   for _, spritesheet in ipairs(spriteEditor.spritesheets) do
     drawSpritesheetUi(spritesheet, width-15)
@@ -219,7 +247,15 @@ local drawSpriteSheetTabUI = function(x, y, width)
 
   suit:Draw(drawStencil, {noScaleY=true}, unpack(spriteEditor.scrollHitbox))  -- suit draws backwards, set stencil last
 
-  local dragBar = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
+  local dragBarColor
+  if not suit:wasHovered("spritesheetTabBGDragBar") and not tabWidthChanging then
+    dragBarColor = {.2,.2,.2} -- default colour
+  else
+    dragBarColor = {.6,.6,.6} -- hover colour
+  end
+
+  local dragBar = suit:Shape("spritesheetTabBGDragBar", dragBarColor, width-5, y, 5,lg.getHeight())
+
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())
 
   local isPrimaryMousePressed = lm.isDown(1)
@@ -292,14 +328,15 @@ spriteEditor.drawAboveUI = function()
 end
 
 spriteEditor.resize = function(_, _)
-  scrollHeight = 0
+  spriteEditor.calculateScrollboxHeight()
+  spriteEditor.scrollHeight = 0
 end
 
 require("scene.editor.spriteeditor.dropping")(spriteEditor)
 
 spriteEditor.mousepressed = function(x,y, button)
   if button == 3 and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
-    scrollHeight = 0
+    spriteEditor.scrollHeight = 0
   end
   if button == 1 and not spriteEditor.suit:anyHovered() and not tabWidthChanging then
     movingGrid = true
@@ -323,10 +360,9 @@ spriteEditor.mousereleased = function(_,_, button)
   end
 end
 
-spriteEditor.wheelmoved = function(_, y)
+spriteEditor.wheelmoved = function(_, _, _, y)
   if not movingGrid and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
-    scrollHeight = scrollHeight + y * settings.client.scrollspeed * spriteEditor.suit.scale
-    if scrollHeight > 0 then scrollHeight = 0 end -- TODO: graphics - mask scroll area
+    spriteEditor.scrollHeight = spriteEditor.scrollHeight + y * settings.client.scrollspeed * spriteEditor.suit.scale
   end
 end
 
