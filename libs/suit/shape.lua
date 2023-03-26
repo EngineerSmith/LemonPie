@@ -1,10 +1,11 @@
 return function(core, id, color, ...)
   local opt, x,y,w,h = core.getOptionsAndSize(...)
-  x, w = x * core.scale, w * core.scale
-
+  
+  if not opt.noScaleX then
+    x, w = x * core.scale, w * core.scale
+  end
   if not opt.noScaleY then
-    y = y * core.scale
-    h = h * core.scale
+    y, h  = y * core.scale, h * core.scale
   end
 
   opt.id = opt.id or id

@@ -26,6 +26,7 @@ function suit.new(theme)
 
 		Shape = require(BASE.."shape"),
 		Image = require(BASE.."image"),
+		Draw = require(BASE.."draw"),
 
 		layout = require(BASE.."layout").new(),
 

@@ -100,6 +100,8 @@ scene.update = function(dt)
       timerIcon, timerTime = 0, 1
       iconY[1] = 0
     end
+  else
+    iconY[1] = 0
   end
 end
 
@@ -124,6 +126,7 @@ scene.updateui = function()
   suit:Shape("NavbarBgLine", bgline, 0, height-3, lg.getWidth(), 3)
   suit.layout:reset(100*imgScale*scene.scale+10, 5, 10)
   local b1 = suit:Button(b1txt, { noScaleX = true, r=5 }, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
+  if b1.hit then scene.active = scene.spriteEditor end
   local b2 = suit:Button(b2txt, { noScaleX = true, disable = true, r=5}, suit.layout:right(lg.getFont():getWidth(b1txt) + 10, 35))
   if b1.hovered or b2.hovered then
     bgline[1],bgline[2],bgline[3] = .6,.6,.6
@@ -190,6 +193,7 @@ scene.keypressed = function(key, scancode, isrepeat)
       if scene.project:saveProject() then
         scene.topLeftIcon = "icon.save"
         flux.to(iconY, .3, {-4}):ease("backout"):after(iconY, .3, {-1}):ease("backout")
+        timerTime = 1
       end
     elseif scancode == "z" then
       undo.pop()

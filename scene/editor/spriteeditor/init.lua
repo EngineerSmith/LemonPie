@@ -171,6 +171,18 @@ local drawSpritesheetUi = function(spritesheet, width)
   suit.layout:padding(20,20)
 end
 
+local drawStencil = function(x,y,w,h)
+  lg.setColorMask(false)
+  lg.setStencilMode("replace", "always", 1)
+  lg.rectangle("fill", x,y,w,h)
+  lg.setStencilMode("keep", "greater", 0)
+  lg.setColorMask(true)
+end
+
+local clearStencil = function()
+  lg.setStencilMode()
+end
+
 local drawSpriteSheetTabUI = function(x, y, width)
   local suit = spriteEditor.suit
 
@@ -179,6 +191,8 @@ local drawSpriteSheetTabUI = function(x, y, width)
   suit:Shape(-1, {.6,.6,.6}, {noScaleY = true}, x,label.y+label.h,width-5,2*suit.scale)
 
   spriteEditor.scrollHitbox = {x, label.y+label.h, (width-5)*suit.scale, lg.getHeight()}
+
+  suit:Draw(clearStencil, unpack(spriteEditor.scrollHitbox)) -- suit draws backwards, so clear stencil first
 
   makeDroptext(lg.getFont())
 
@@ -191,6 +205,8 @@ local drawSpriteSheetTabUI = function(x, y, width)
   for _, spritesheet in ipairs(spriteEditor.spritesheets) do
     drawSpritesheetUi(spritesheet, width-15)
   end
+
+  suit:Draw(drawStencil, unpack(spriteEditor.scrollHitbox))  -- suit draws backwards, so set stencil last
 
   local dragBar = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())

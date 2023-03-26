@@ -53,6 +53,7 @@ return setmetatable({
 
 	Shape = function(...) return instance:Shape(...) end,
 	Image = function(...) return instance:Image(...) end,
+	Draw = function(...) return instance:Draw(...) end,
 	
 	-- layout
 	layout = instance.layout
