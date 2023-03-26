@@ -18,7 +18,7 @@ local function isType(val, typ)
 end
 
 return function(core, id, image, ...)
-  assert(isType(image, "Image"), "Given image is not a love.graphics.image")
+  assert(isType(image, "Texture"), "Given image is not a love.graphics.image:", image:type())
 
   local opt, x,y,w,h = core.getOptionsAndSize(...)
 
@@ -34,8 +34,8 @@ return function(core, id, image, ...)
 
   local hit = core:mouseReleasedOn(opt.id)
   local hovered = core:isHovered(opt.id)
-  local entered = core:isHovered(opt.id) and not core:wasHovered(opt.id)
-  local left = not core:isHovered(opt.id) and core:wasHovered(opt.id)
+  local entered = hovered and not core:wasHovered(opt.id)
+  local left = not hovered and core:wasHovered(opt.id)
 
   opt.hit, opt.hovered, opt.entered, opt.left = hit, hovered, entered, left
 

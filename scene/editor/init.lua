@@ -1,9 +1,13 @@
 local suit = require("libs.suit").new()
 suit.theme = require("ui.theme_Editor")
 
+local flux = require("libs.flux")
+
 local settings = require("util.settings")
 local logger = require("util.logger")
 local assets = require("util.assets")
+
+local undo = require("src.undo")
 
 local lg = love.graphics
 
@@ -13,8 +17,6 @@ local scene = {
   drop = "not dropping",
 }
 
-local icons = { }
-
 scene.load = function(project, projecterrors, start)
   scene.active = scene.spriteEditor
   scene.project = project
@@ -22,22 +24,24 @@ scene.load = function(project, projecterrors, start)
   assets["audio.ui.button"] = assets["audio.ui.button"] or love.audio.newSource(assets._path["audio.ui.button"], "static")
   assets["audio.ui.button"]:setVolume(0.2)
 
-  icons["barsHorizontal"] = love.graphics.newImage(assets._path["icon.barsHorizontal"])
-  icons["barsHorizontal.inactive"] = love.graphics.newImage(assets._path["icon.barsHorizontal.inactive"])
+  assets["icon.barsHorizontal"] = lg.newImage(assets._path["icon.barsHorizontal"])
+  assets["icon.barsHorizontal.inactive"] = lg.newImage(assets._path["icon.barsHorizontal.inactive"])
+  assets["icon.save"] = lg.newImage(assets._path["icon.save"])
+  assets["icon.undo"] = lg.newImage(assets._path["icon.undo"])
   
   scene.spriteEditor.load(project, suit)
   scene.resize(lg.getDimensions())
   local stop = love.timer.getTime()
   
   logger.info(("Took %.4f seconds to load project"):format(stop-start))
+
+  undo.reset()
 end
 
 scene.unload = function()
   local success, errorMessage = scene.project:close()
   if not success then error(errorMessage) end -- todo: replace with better error
   scene.spriteEditor.unload()
-
-  icons = { }
 end
 
 local buttonlist = {
@@ -84,8 +88,19 @@ scene.resize = function(w, h)
   scene.active.resize(w, h)
 end
 
+scene.topLeftIcon = "icon.barsHorizontal"
+local timerIcon, timerTime, iconY = 0, 1, {0}
+
 scene.update = function(dt)
   scene.active.update(dt)
+  if scene.topLeftIcon ~= "icon.barsHorizontal" then
+    timerIcon = timerIcon + dt
+    if timerIcon > timerTime then
+      scene.topLeftIcon = "icon.barsHorizontal"
+      timerIcon, timerTime = 0, 1
+      iconY[1] = 0
+    end
+  end
 end
 
 local bgline = {.5,.5,.5}
@@ -97,10 +112,11 @@ scene.updateui = function()
 
   local height = 40
   local imgScale = .4
-  local b = suit:ImageButton(icons["barsHorizontal.inactive"], { hovered = icons["barsHorizontal"], scale = imgScale }, 0,0)
+
+  local b = suit:ImageButton(assets[scene.topLeftIcon], { hovered = assets["icon.barsHorizontal.inactive"], scale = imgScale }, 0,iconY[1])
   
   if b.hit then
-    if not scene.quit() then -- lazy hack, probably should change
+    if not scene.quit() then -- lazy hack, should change
       require("util.sceneManager").changeScene("scene.menu", true)
     end
   end
@@ -167,13 +183,20 @@ scene.textinput = function(...)
   suit:textinput(...)
 end
 
-scene.keypressed = function(...)
-  suit:keypressed(...)
-end
-
-scene.keyreleased = function(_, scancode)
-  if scancode == "s" and love.keyboard.isScancodeDown("rctrl", "lctrl") then
-    scene.project:saveProject()
+scene.keypressed = function(key, scancode, isrepeat)
+  suit:keypressed(key, scancode, isrepeat)
+  if love.keyboard.isScancodeDown("rctrl", "lctrl") then
+    if scancode == "s" then
+      if scene.project:saveProject() then
+        scene.topLeftIcon = "icon.save"
+        flux.to(iconY, .3, {-4}):ease("backout"):after(iconY, .3, {-1}):ease("backout")
+      end
+    elseif scancode == "z" then
+      undo.pop()
+      timerTime = .3
+      scene.topLeftIcon = "icon.undo"
+      scene.project.dirty = true
+    end
   end
 end
 

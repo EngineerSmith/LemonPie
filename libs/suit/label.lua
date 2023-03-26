@@ -27,8 +27,8 @@ return function(core, text, ...)
 
 	local hit = core:mouseReleasedOn(opt.id)
 	local hovered = core:isHovered(opt.id)
-	local entered = core:isHovered(opt.id) and not core:wasHovered(opt.id)
-	local left = not core:isHovered(opt.id) and core:wasHovered(opt.id)
+	local entered = hovered and not core:wasHovered(opt.id)
+	local left = not hovered and core:wasHovered(opt.id)
 
 	opt.hit, opt.hovered, opt.entered, opt.left = hit, hovered, entered, left
 

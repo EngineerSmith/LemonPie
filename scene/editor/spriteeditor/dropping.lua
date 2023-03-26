@@ -19,7 +19,7 @@ spriteEditor.filedropped = function(file)
     local success, extension = fileUtil.isImageFile(filepath)
     if success then
       ::loopback::
-      local result = spriteEditor.project:addSpritesheet(filepath)
+      local result, shortpath = spriteEditor.project:addSpritesheet(filepath)
       if result then
         logger.warn("file dropped could not be added:", result)
         if result == "notinproject" then
@@ -66,10 +66,15 @@ spriteEditor.filedropped = function(file)
             file:close()
             return
           end
+        elseif result == "alreadyadded" then
+          love.window.showMessageBox("Dropped image", "The dropped image ("..tostring(filepath)..") has already been added")
+          file:close()
+          return
         end
       end
-      local data = file:read("data", file:getSize())
-      spriteEditor.img = love.graphics.newImage(data)
+      local info = nfs.getInfo(filepath)
+      spriteEditor.addSpritesheet(shortpath, file:read("data", file:getSize()), info and info.modtime or os.time())
+
       love.window.focus()
     end
   end

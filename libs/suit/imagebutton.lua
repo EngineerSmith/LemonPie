@@ -45,7 +45,7 @@ return function(core, normal, ...)
 		image = opt.hovered
 	end
 
-	assert(isType(image, "Image"), "state image is not a love.graphics.image")
+	assert(isType(image, "Texture"), "state image is not a love.graphics.image: "..image:type())
 
 	core:registerDraw(opt.draw or function(image,x,y, r,g,b,a)
 		love.graphics.setColor(r,g,b,a)

@@ -15,6 +15,8 @@ local settings = require("util.settings")
 local logger = require("util.logger")
 local fileUtil = require("util.file")
 
+local undo = require("src.undo")
+
 local movingGrid = false
 
 local spriteEditor = { 
@@ -50,6 +52,18 @@ spriteEditor.load = function(project, suit)
   end
   logger.info("Loaded", #spriteEditor.spritesheets, "spritesheets")
   return errors
+end
+
+spriteEditor.addSpritesheet = function(path, imageData, modtime)
+  local filepath = spriteEditor.project.path..path
+  table.insert(spriteEditor.spritesheets, {
+      path = path,
+      fullpath = filepath,
+      text = fileUtil.getFileName(path),
+      image = lg.newImage(imageData),
+      time = modtime,
+      editing = false,
+    })
 end
 
 spriteEditor.unload = function()
@@ -99,6 +113,11 @@ local subtitleGrey = {love.math.colorFromBytes(210,210,210)}
 local imageOpt = { background = true, noScaleY = true, }
 local inputColor = { normal = { bg = {.6,.6,.6}, fg = {1,1,1}}}
 
+local undonaming = function(spritesheet, ss, name)
+  spritesheet.text = name
+  ss.name = name
+end
+
 local drawSpritesheetUi = function(spritesheet, width)
   local suit = spriteEditor.suit
   
@@ -121,6 +140,7 @@ local drawSpritesheetUi = function(spritesheet, width)
     if state.hit then
       spritesheet.editing = true
       suit:grabKeyboardFocus(spritesheetOpt.id)
+      spritesheet.cursor = nil
     end
   else
     spritesheetOpt.color = inputColor
@@ -130,6 +150,7 @@ local drawSpritesheetUi = function(spritesheet, width)
       for _, ss in ipairs(spriteEditor.project.spritesheets) do
         if ss.path == spritesheet.path then
           if ss.name ~= spritesheet.text then
+            undo.push(undonaming, spritesheet, ss, ss.name)
             ss.name = spritesheet.text
             spriteEditor.project.dirty = true
           end
@@ -240,9 +261,6 @@ spriteEditor.drawAboveUI = function()
     local targetY = spriteEditor.isdroppingSpritesheet-h/2
     targetY = math.max(spriteEditor.scrollHitbox[2], math.min(targetY, lg.getHeight()-h))
     spriteEditor.spritesheetdroppingText:draw(0,targetY)
-  end
-  if spriteEditor.img then
-    lg.draw(spriteEditor.img, 0,0)
   end
 end
 

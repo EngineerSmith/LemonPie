@@ -9,8 +9,6 @@ local nfs = require("libs.nativefs")
 
 local lfs = love.filesystem
 
-local prevPath = nil
-
 local projectsFile = "projects.json"
 local projectFile = "/project.lemonpie"
 
@@ -20,11 +18,7 @@ project.new = function(path)
   if not nfs.getInfo(path, "directory") then
     return nil, "Could not find the directory at "..tostring(path)
   end
-  if prevPath then
-    project.addProject(prevPath)
-  end
-
-  prevPath = path
+  
   project.addProject(path)
 
   return project
@@ -81,12 +75,6 @@ end
 -- self funcs
 
 project.close = function(self)
-  local errorMessage = self:saveProject()
-  if errorMessage then
-    return false, errorMessage
-  end
-  project.addProject(prevPath)
-  prevPath = nil
   love.window.setTitle("LemonPie")
   return true
 end
@@ -98,28 +86,30 @@ project.saveProject = function(self)
     if not success then
       return errorMessage
     end
+    project.addProject(self.path)
     self.dirty = false
+    return true
   end
 end
 
 project.addSpritesheet = function(self, path)
   local i, j = path:find(self.path, 1, true)
-  if i == 1 then
-    path = path:sub(j+1):gsub("\\", "/")
-    for _, spritesheet in ipairs(self.spritesheets) do
-      if spritesheet.path == path then
-        return "alreadyadded"
-      end
-    end
-    logger.info("Added spritesheet at", path)
-    table.insert(self.spritesheets, {
-        path = path,
-        name = file.getFileName(path),
-      })
-    self.dirty = true
-  else
+  if i ~= 1 then
     return "notinproject"
   end
+  path = path:sub(j+1):gsub("\\", "/")
+  for _, spritesheet in ipairs(self.spritesheets) do
+    if spritesheet.path == path then
+      return "alreadyadded"
+    end
+  end
+  logger.info("Added new spritesheet", path)
+  table.insert(self.spritesheets, {
+      path = path,
+      name = file.getFileName(path),
+    })
+  self.dirty = true
+  return nil, path
 end
 
 return project

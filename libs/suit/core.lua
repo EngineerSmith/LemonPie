@@ -156,8 +156,8 @@ function suit:getPressedKey()
 	return self.key_down, self.textchar
 end
 
-function suit:keypressed(key)
-	self.key_down = key
+function suit:keypressed(_, scancode)
+	self.key_down = scancode
 end
 
 function suit:textinput(char)
@@ -199,17 +199,21 @@ function suit:enterFrame(mouseButton)
 	elseif self.active == nil then
 		self.active = NONE
 	end
-
+	
+	
 	self.hovered_last, self.hovered = self.hovered, nil
 	self:updateMouse(love.mouse.getX(), love.mouse.getY(), love.mouse.isDown(mouseButton or 1))
-	self:grabKeyboardFocus(NONE)
 	self.hit = nil
+	self:grabKeyboardFocus(NONE)
 	
 	self.wheel_x, self.wheel_y = 0,0
 end
 
 function suit:exitFrame()
 	self.key_down, self.textchar = nil, ""
+	if self.active ~= NONE and self.active ~= nil and self.active ~= self.keyboardFocus then
+		self.keyboardFocus = NONE
+	end
 end
 
 -- draw
