@@ -14,6 +14,7 @@ local nfs = require("libs.nativefs")
 local settings = require("util.settings")
 local logger = require("util.logger")
 local fileUtil = require("util.file")
+local assets = require("util.assets")
 
 local undo = require("src.undo")
 
@@ -168,7 +169,15 @@ local drawSpritesheetUi = function(spritesheet, width)
 
   suit:Image(spritesheet.fullpath.."image", spritesheet.image, imageOpt, suit.layout:down(width, 120*suit.scale))
 
-  suit.layout:padding(20,20)
+  suit.layout:padding(0,3)
+  local scale, w,h = .3, assets["icon.trashcan"]:getDimensions()
+  suit:ImageButton(assets["icon.right"], {hovered = assets["icon.down"],noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-w*scale-1, h*scale*suit.scale))
+  suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right())
+  suit.layout:left()
+
+  suit:Shape(-1, {.5,.5,.5}, {noScaleY = true}, suit.layout:down(width, 1*suit.scale))
+
+  suit.layout:padding(20,0)
 end
 
 local drawStencil = function(x,y,w,h)
@@ -206,7 +215,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
     drawSpritesheetUi(spritesheet, width-15)
   end
 
-  suit:Draw(drawStencil, unpack(spriteEditor.scrollHitbox))  -- suit draws backwards, set stencil last
+  suit:Draw(drawStencil, {noScaleY=true}, unpack(spriteEditor.scrollHitbox))  -- suit draws backwards, set stencil last
 
   local dragBar = suit:Shape("spritesheetTabBGDragBar", {.2,.2,.2}, width-5, y, 5,lg.getHeight())
   suit:Shape("spritesheetTabBG", {.4,.4,.4}, x, y, width-5, lg.getHeight())

@@ -9,7 +9,12 @@ end
 return function(core, normal, ...)
 	local opt, x,y = core.getOptionsAndSize(...)
 
-	x, y = x * core.scale, y * core.scale
+	if not opt.noScaleX then
+    x = x * core.scale
+  end
+  if not opt.noScaleY then
+    y = y * core.scale
+  end
 
 	opt.normal = normal or opt.normal or opt[1]
 	opt.hovered = opt.hovered or opt[2] or opt.normal
@@ -45,11 +50,11 @@ return function(core, normal, ...)
 		image = opt.hovered
 	end
 
-	assert(isType(image, "Texture"), "state image is not a love.graphics.image: "..image:type())
+	assert(isType(image, "Texture"), "state image is not a love.graphics.texture")
 
 	core:registerDraw(opt.draw or function(image,x,y, r,g,b,a)
 		love.graphics.setColor(r,g,b,a)
-		love.graphics.draw(image, x * core.scale, y * core.scale, 0, (opt.scale or 1) * core.scale)
+		love.graphics.draw(image, x, y, 0, (opt.scale or 1) * core.scale)
 	end, image, x,y, love.graphics.getColor())
 
 	return {

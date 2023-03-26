@@ -18,7 +18,7 @@ local function isType(val, typ)
 end
 
 return function(core, id, image, ...)
-  assert(isType(image, "Texture"), "Given image is not a love.graphics.image:", image:type())
+  assert(isType(image, "Texture"), "Given image is not a love.graphics.texture")
 
   local opt, x,y,w,h = core.getOptionsAndSize(...)
 

@@ -10,6 +10,10 @@ return {
   ["icon.trashcan"] = "assets/kenney/gameicons/trashcan.png",
   ["icon.trashcan.open"] = "assets/kenney/gameicons/trashcanOpen.png",
   ["icon.undo"] = "assets/kenney/gameicons/return.png",
+  ["icon.up"] = "assets/kenney/gameicons/up.png",
+  ["icon.down"] = "assets/kenney/gameicons/down.png",
+  ["icon.left"] = "assets/kenney/gameicons/left.png",
+  ["icon.right"] = "assets/kenney/gameicons/right.png",
 
   ["font.regular"] = "assets/fonts/OpenDyslexic-Regular.otf",
   ["font.bold"] = "assets/fonts/OpenDyslexic-Bold.otf",

@@ -17,6 +17,10 @@ local scene = {
   drop = "not dropping",
 }
 
+local loadImageAssets = function(assetID)
+  assets[assetID] = assets[assetID] or lg.newImage(assets._path[assetID])
+end
+
 scene.load = function(project, projecterrors, start)
   scene.active = scene.spriteEditor
   scene.project = project
@@ -24,10 +28,16 @@ scene.load = function(project, projecterrors, start)
   assets["audio.ui.button"] = assets["audio.ui.button"] or love.audio.newSource(assets._path["audio.ui.button"], "static")
   assets["audio.ui.button"]:setVolume(0.2)
 
-  assets["icon.barsHorizontal"] = lg.newImage(assets._path["icon.barsHorizontal"])
-  assets["icon.barsHorizontal.inactive"] = lg.newImage(assets._path["icon.barsHorizontal.inactive"])
-  assets["icon.save"] = lg.newImage(assets._path["icon.save"])
-  assets["icon.undo"] = lg.newImage(assets._path["icon.undo"])
+  loadImageAssets("icon.barsHorizontal")
+  loadImageAssets("icon.barsHorizontal.inactive")
+  loadImageAssets("icon.save")
+  loadImageAssets("icon.undo")
+  loadImageAssets("icon.trashcan")
+  loadImageAssets("icon.trashcan.open")
+  loadImageAssets("icon.up")
+  loadImageAssets("icon.down")
+  loadImageAssets("icon.left")
+  loadImageAssets("icon.right")
   
   scene.spriteEditor.load(project, suit)
   scene.resize(lg.getDimensions())
