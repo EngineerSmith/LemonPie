@@ -32,7 +32,7 @@ spriteEditor.load = function(project, suit)
   local errors = nil
 
   spriteEditor.spritesheets = { }
-  for _, spritesheet in ipairs(spriteEditor.project.spritesheets) do
+  for index, spritesheet in ipairs(spriteEditor.project.spritesheets) do
     local filepath = spriteEditor.project.path..spritesheet.path
     local info = nfs.getInfo(filepath, "file")
     if info then
@@ -44,6 +44,7 @@ spriteEditor.load = function(project, suit)
           image = lg.newImage(data),
           time = info.modtime,
           editing = false,
+          index = index,
         })
     else    --- add new line, or start with nothing
       errors = (errors and errors.."\n" or "").."Could not find: "..tostring(fullpath)
@@ -56,16 +57,23 @@ spriteEditor.load = function(project, suit)
   return errors
 end
 
-spriteEditor.addSpritesheet = function(path, imageData, modtime)
+spriteEditor.addSpritesheet = function(path, imageData, modtime, name, index)
   local filepath = spriteEditor.project.path..path
-  table.insert(spriteEditor.spritesheets, {
-      path = path,
-      fullpath = filepath,
-      text = fileUtil.getFileName(path),
-      image = lg.newImage(imageData),
-      time = modtime,
-      editing = false,
-    })
+  local spritesheet = {
+    path = path,
+    fullpath = filepath,
+    text = name or fileUtil.getFileName(path),
+    image = lg.newImage(imageData),
+    time = modtime,
+    editing = false,
+    index = index or #spriteEditor.spritesheets + 1
+  }
+  if index then
+    table.insert(spriteEditor.spritesheets, index, spritesheet)
+  else
+    table.insert(spriteEditor.spritesheets, spritesheet)
+  end
+  spriteEditor.calculateScrollboxHeight()
 end
 
 spriteEditor.unload = function()
@@ -80,13 +88,15 @@ spriteEditor.update = function(dt)
     spriteEditor.spritesheetdroppingText:update(dt)
   end
   if spriteEditor.scrollHitbox then
-    if spriteEditor.scrollHeight > 0 then spriteEditor.scrollHeight = spriteEditor.scrollHeight - dt*8*spriteEditor.scrollHeight end
     local limit = (spriteEditor.scrollHitbox[4] - spriteEditor.scrollHitbox[2]) - spriteEditor.scrollHeightLimit
+    if limit > 0 then goto continue end
+    if spriteEditor.scrollHeight > 0 then spriteEditor.scrollHeight = spriteEditor.scrollHeight - dt*8*spriteEditor.scrollHeight end
     if spriteEditor.scrollHeight < limit then spriteEditor.scrollHeight = spriteEditor.scrollHeight + dt*8*(limit-spriteEditor.scrollHeight) end
     -- if it goes too far, we don't want to lose the scroll area
     if spriteEditor.scrollHeight > 300*spriteEditor.suit.scale then spriteEditor.scrollHeight = 0 end
     if spriteEditor.scrollHeight < limit-300*spriteEditor.suit.scale then spriteEditor.scrollHeight = limit end
   end
+  ::continue::
 end
 
 local validateTabWidth = function(width)
@@ -140,6 +150,44 @@ spriteEditor.calculateScrollboxHeight = function()
     end
   end
   spriteEditor.scrollHeightLimit = height + 2 * suit.scale
+end
+
+local addRemovedSpritesheet
+addRemovedSpritesheet = function(fullpath, localpath, sprites, name, index) -- undo remove action
+  local info = nfs.getInfo(fullpath, "file")
+  if not info then
+    local pressed = love.window.showMessageBox("Could not find spritesheet",
+      "Could not find spritesheet "..tostring(fullpath).."; make sure the file still exists to complete the undo.\n\nContinue - will continue without undoing - but you won't be able to recover any data.\nUndo - put the spritesheet back into the undo list; allows you to close this window and still have the option to try and undo again once the file exists.",
+      { "Continue", "Undo", enterbutton = 2, escapebutton = 2}, "error", true)
+    if pressed == 2 then
+      undo.push(addRemovedSpritesheet, fullpath, localpath, sprites, name, index)
+    end
+    return
+  end
+  spriteEditor.project:addSpritesheet(fullpath, sprites, name, index)
+  local imagedata = nfs.read("data", fullpath, "all")
+  spriteEditor.addSpritesheet(localpath, imagedata, info.modtime, name, index)
+  logger.info("Restored removed spritesheet:", localpath)
+end
+
+local removeSpritesheet = function(index)
+  local errormessage = spriteEditor.project:removeSpritesheet(index)
+  if errormessage then
+    logger.error("Could not remove spritesheet:", errormessage)
+    return
+  end
+  
+  local spritesheet = spriteEditor.spritesheets[index]
+  undo.push(addRemovedSpritesheet, spritesheet.fullpath, spritesheet.path, spritesheet.sprites or {}, spritesheet.text, index)
+
+  table.remove(spriteEditor.spritesheets, index)
+  logger.info("Successfully removed spritesheet:", spritesheet.path)
+
+  for index, spritesheet in ipairs(spriteEditor.spritesheets) do
+    spritesheet.index = index
+  end
+
+  spriteEditor.calculateScrollboxHeight()
 end
 
 local drawSpritesheetUi = function(spritesheet, width)
@@ -204,7 +252,12 @@ local drawSpritesheetUi = function(spritesheet, width)
   local scale, w,h = .3, assets["icon.trashcan"]:getDimensions()
   suit:ImageButton(assets["icon.right"], {hovered = assets["icon.down"],noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-(w*scale*2), h*scale*suit.scale))
   suit:ImageButton(assets["icon.updown"], {hovered = assets["icon.updown"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."updown"}, suit.layout:right(w*scale,h*scale*suit.scale))
-  suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right())
+  local trashstate = suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right())
+  
+  if trashstate.hit then
+    removeSpritesheet(spritesheet.index)
+  end
+  
   suit.layout:left()
   suit.layout:left(width-(w*scale*2), h*scale*suit.scale)
 
@@ -241,8 +294,8 @@ local drawSpriteSheetTabUI = function(x, y, width)
   if spriteEditor.isdroppingSpritesheet then
     local s = suit:Shape("droppingSpritesheet", {.1,.1,.1,.7}, {noScaleY = true}, x, label.y+label.h+2*suit.scale, width-5, lg.getHeight())
   end
-
-  suit.layout:reset(x+5, label.y+label.h+10+spriteEditor.scrollHeight, 20,5)
+  
+  suit.layout:reset(x+5, label.y+label.h+10+spriteEditor.scrollHeight, 20,3)
 
   for _, spritesheet in ipairs(spriteEditor.spritesheets) do
     drawSpritesheetUi(spritesheet, width-15)
@@ -364,7 +417,8 @@ spriteEditor.mousereleased = function(_,_, button)
 end
 
 spriteEditor.wheelmoved = function(_, _, _, y)
-  if not movingGrid and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
+  local limit = (spriteEditor.scrollHitbox[4] - spriteEditor.scrollHitbox[2]) - spriteEditor.scrollHeightLimit
+  if not (limit > 0) and not movingGrid and spriteEditor.scrollHitbox and spriteEditor.suit:mouseInRect(unpack(spriteEditor.scrollHitbox)) then
     spriteEditor.scrollHeight = spriteEditor.scrollHeight + y * settings.client.scrollspeed * spriteEditor.suit.scale
   end
 end

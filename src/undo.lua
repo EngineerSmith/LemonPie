@@ -19,4 +19,8 @@ undo.reset = function()
   undo.list = { }
 end
 
+undo.hasItemsWaiting = function()
+  return #undo.list > 0
+end
+
 return undo

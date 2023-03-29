@@ -98,7 +98,7 @@ scene.resize = function(w, h)
   end
   suit.subtitleFont = assets[fontName]
 
-  scene.active.resize(w, h)
+  scene.spriteEditor.resize(w, h)
 end
 
 scene.topLeftIcon = "icon.barsHorizontal"
@@ -151,8 +151,6 @@ scene.updateui = function()
   scene.active.updateui(0, height)
 end
 
-local _x, _y = -40,-40
-
 scene.draw = function()
   lg.origin()
   lg.clear(0,0,0,1)
@@ -161,8 +159,6 @@ scene.draw = function()
   if scene.active.drawAboveUI then
     scene.active.drawAboveUI()
   end
-  lg.setColor(1,0,0,1)
-  lg.circle("fill", _x, _y, 20)
   lg.setColor(1,1,1,1)
 end
 
@@ -208,7 +204,7 @@ scene.keypressed = function(key, scancode, isrepeat)
         flux.to(iconY, .3, {-4}):ease("backout"):after(iconY, .3, {-1}):ease("backout")
         timerTime = 1
       end
-    elseif scancode == "z" then
+    elseif scancode == "z" and undo.hasItemsWaiting() then
       undo.pop()
       timerTime = .3
       scene.topLeftIcon = "icon.undo"

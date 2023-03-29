@@ -84,6 +84,7 @@ project.saveProject = function(self)
     self.dirty = nil
     local success, errorMessage = json.encode(self.path..projectFile, self, true)
     if not success then
+      self.dirty = true
       return errorMessage
     end
     project.addProject(self.path)
@@ -92,7 +93,7 @@ project.saveProject = function(self)
   end
 end
 
-project.addSpritesheet = function(self, path)
+project.addSpritesheet = function(self, path, sprites, name, index)
   local i, j = path:find(self.path, 1, true)
   if i ~= 1 then
     return "notinproject"
@@ -103,13 +104,26 @@ project.addSpritesheet = function(self, path)
       return "alreadyadded"
     end
   end
-  logger.info("Added new spritesheet", path)
-  table.insert(self.spritesheets, {
-      path = path,
-      name = file.getFileName(path),
-    })
+  logger.info("Added new spritesheet", path, (index and "at"..tostring(index) or ""))
+  local spritesheet = {
+    path = path,
+    name = name or file.getFileName(path),
+  }
+  if index then
+    table.insert(self.spritesheets, index, spritesheet)
+  else
+    table.insert(self.spritesheets, spritesheet)
+  end
   self.dirty = true
   return nil, path
+end
+
+project.removeSpritesheet = function(self, index)
+  if index < 1 or index > #self.spritesheets then
+    return "invalidindex"
+  end
+  table.remove(self.spritesheets, index)
+  self.dirty = true
 end
 
 return project
