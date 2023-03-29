@@ -89,7 +89,10 @@ spriteEditor.update = function(dt)
   end
   if spriteEditor.scrollHitbox then
     local limit = (spriteEditor.scrollHitbox[4] - spriteEditor.scrollHitbox[2]) - spriteEditor.scrollHeightLimit
-    if limit > 0 then goto continue end
+    if limit > 0 then 
+      spriteEditor.scrollHeight = 0
+      goto continue
+    end
     if spriteEditor.scrollHeight > 0 then spriteEditor.scrollHeight = spriteEditor.scrollHeight - dt*8*spriteEditor.scrollHeight end
     if spriteEditor.scrollHeight < limit then spriteEditor.scrollHeight = spriteEditor.scrollHeight + dt*8*(limit-spriteEditor.scrollHeight) end
     -- if it goes too far, we don't want to lose the scroll area
