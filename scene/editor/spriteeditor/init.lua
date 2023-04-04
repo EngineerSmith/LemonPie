@@ -11,6 +11,7 @@ end
 
 local sysl = require("libs.SYSL-Text")
 local nfs = require("libs.nativefs")
+local flux = require("libs.flux")
 
 local settings = require("util.settings")
 local logger = require("util.logger")
@@ -253,16 +254,49 @@ local drawSpritesheetUi = function(spritesheet, width)
 
   suit.layout:padding(0,3)
   local scale, w,h = .3, assets["icon.trashcan"]:getDimensions()
-  suit:ImageButton(assets["icon.right"], {hovered = assets["icon.down"],noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-(w*scale*2), h*scale*suit.scale))
-  suit:ImageButton(assets["icon.updown"], {hovered = assets["icon.updown"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."updown"}, suit.layout:right(w*scale,h*scale*suit.scale))
-  local trashstate = suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right())
+
+  local img1, img2
+  if not spritesheet.extended then
+    img1, img2 = assets["icon.right"], assets["icon.down"]
+  else
+    img1, img2 = assets["icon.down"], assets["icon.right"]
+  end
+  local extendstate = suit:ImageButton(img1, {hovered = img2,noScaleY=true,scale=scale, id=spritesheet.fullpath.."down"},suit.layout:down(width-(w*scale), h*scale*suit.scale))
+  local trashstate = suit:ImageButton(assets["icon.trashcan"], {hovered = assets["icon.trashcan.open"],noScaleY=true, scale = scale, id=spritesheet.fullpath.."trash"}, suit.layout:right(w*scale,h*scale*suit.scale))
   
+  if extendstate.hit then
+    spritesheet.extended = not spritesheet.extended
+  end
+  if extendstate.entered then
+    if cursor_hand then lm.setCursor(cursor_hand) end
+    if not spritesheet.extended then
+      spriteEditor.extendAnim = { spritesheet = spritesheet, offset = 0 }
+      spriteEditor.extendAnim.flux = flux.to(spriteEditor.extendAnim, .5, { offset = 15 }):ease("cubicout")
+    end
+  end
+  if extendstate.left then
+    lm.setCursor(nil)
+    spriteEditor.extendAnim = nil
+  end
+
   if trashstate.hit then
     removeSpritesheet(spritesheet.index)
+  end
+
+  if trashstate.entered and cursor_hand then
+    lm.setCursor(cursor_hand)
+  end
+  if trashstate.left then
+    lm.setCursor(nil)
   end
   
   suit.layout:left()
   suit.layout:left(width-(w*scale*2), h*scale*suit.scale)
+
+  if spriteEditor.extendAnim and spriteEditor.extendAnim.spritesheet == spritesheet then
+    suit:Shape(-1, {.5,.5,.5}, {noScaleY = true}, suit.layout:down(width, 1*(suit.scale*1.5)))
+    suit.layout:down(0, spriteEditor.extendAnim.offset*suit.scale)
+  end
 
   suit:Shape(-1, {.5,.5,.5}, {noScaleY = true}, suit.layout:down(width, 1*(suit.scale*1.5)))
 
@@ -323,7 +357,7 @@ local drawSpriteSheetTabUI = function(x, y, width)
     tabNotHeld = true
   end
   if dragBar.hovered and not movingGrid then
-    if isCursorSupported and cursor_sizewe then lm.setCursor(cursor_sizewe) end
+    if cursor_sizewe then lm.setCursor(cursor_sizewe) end
     if not isPrimaryMousePressed then
       tabNotHeld = false
     elseif not tabNotHeld then -- and isPrimaryMousePressed
